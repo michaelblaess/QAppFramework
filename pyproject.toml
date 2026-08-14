@@ -35,6 +35,11 @@ fmt = { cmd = "ruff format .", help = "Ruff Formatting" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# PEP 561. Ohne diesen Marker ignorieren Konsumenten die Typangaben und
+# brauchen einen mypy-Override je Anwendung.
+[tool.setuptools.package-data]
+handmade_qt = ["py.typed"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py312"
