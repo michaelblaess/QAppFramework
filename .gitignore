@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nuitka
+*.build/
+*.dist/
+*.onefile-build/
+
+# Playwright-Browser, die compile-* neben die Binary legen
+browsers/
+
+# Laufzeit-Ausgaben der Pruefer
+log.txt
+last-crash.txt
+fault.log
+sitemap_*.xml
+fehler_*.json
+fehlerbericht_*.json
+formulare_*.json
+bericht_*.html
+
+# Baselines des Bildvergleichs (gehoeren dem Anwender, nicht dem Repo)
+baselines/
