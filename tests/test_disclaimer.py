@@ -12,7 +12,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtWidgets import QApplication, QLabel  # noqa: E402
 
-from handmade_qt.disclaimer import (  # noqa: E402
+from QAppFramework.disclaimer import (  # noqa: E402
     DISCLAIMER_VERSION,
     DUTIES,
     DisclaimerDialog,

@@ -1,4 +1,4 @@
-# handmade-qt
+# QAppFramework
 
 Shared building blocks for PySide6 desktop applications: a conservative theme,
 runtime-colourable icons and the dialogs that every application needs anyway.
@@ -7,13 +7,11 @@ The point is consistency. Someone who moves from one of these applications to
 the next should not have to relearn anything - so the theme lives here once
 instead of being copied and quietly drifting apart.
 
-Part of [handmade-software.de](https://handmade-software.de).
-
 ## Install
 
 ```toml
 dependencies = [
-    "handmade-qt @ git+https://github.com/michaelblaess/handmade-qt.git",
+    "QAppFramework @ git+https://github.com/michaelblaess/QAppFramework.git",
 ]
 ```
 
@@ -21,7 +19,7 @@ dependencies = [
 
 ```python
 from PySide6.QtWidgets import QApplication
-from handmade_qt import anwenden, lade_icon, DisclaimerDialog, DisclaimerStore
+from QAppFramework import anwenden, lade_icon, DisclaimerDialog, DisclaimerStore
 
 app = QApplication([])
 farben = anwenden(app)                      # Fusion + palette + stylesheet

@@ -18,7 +18,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 pytest.importorskip("PySide6", reason="Erscheinungsbild gehoert zur Desktop-Oberflaeche")
 
-from handmade_qt.theme import DUNKEL, HELL, TOOLBAR_ICON_SIZE, baue_qss  # noqa: E402
+from QAppFramework.theme import DUNKEL, HELL, TOOLBAR_ICON_SIZE, baue_qss  # noqa: E402
 
 # Werte aus jira-timesheet-qt 0.7.1, ui/theme.py. Bei einer Aenderung DORT
 # gehoeren sie hier nachgezogen - nicht umgekehrt.

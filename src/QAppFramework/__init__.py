@@ -1,4 +1,4 @@
-"""handmade-qt - gemeinsame Bausteine fuer PySide6-Anwendungen.
+"""QAppFramework - gemeinsame Bausteine fuer PySide6-Anwendungen.
 
 Damit mehrere Desktop-Anwendungen gleich aussehen und sich gleich verhalten:
 wer von einer zur naechsten wechselt, soll sich nicht umgewoehnen muessen.

@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "handmade-qt"
+name = "QAppFramework"
 version = "0.1.0"
 description = "Gemeinsame Bausteine fuer PySide6-Anwendungen: Erscheinungsbild, Sinnbilder und wiederkehrende Dialoge"
 license = "Apache-2.0"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://handmade-software.de"
+Homepage = "https://github.com/michaelblaess/QAppFramework"
 
 [project.optional-dependencies]
 dev = [
@@ -38,7 +38,7 @@ where = ["src"]
 # PEP 561. Ohne diesen Marker ignorieren Konsumenten die Typangaben und
 # brauchen einen mypy-Override je Anwendung.
 [tool.setuptools.package-data]
-handmade_qt = ["py.typed"]
+QAppFramework = ["py.typed"]
 
 [tool.ruff]
 line-length = 120
@@ -47,6 +47,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "ASYNC"]
 ignore = ["E501", "ASYNC109", "ASYNC240", "E402", "N806"]
+
+[tool.ruff.lint.per-file-ignores]
+# N999 verlangt kleingeschriebene Modulnamen (PEP 8). Der Paketname folgt hier
+# bewusst PySide6 und PyQt6, damit Import- und Paketname identisch sind.
+"src/QAppFramework/*" = ["N999"]
 
 [tool.mypy]
 python_version = "3.12"
