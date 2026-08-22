@@ -6,6 +6,8 @@ wer von einer zur naechsten wechselt, soll sich nicht umgewoehnen muessen.
 Enthalten:
 
 - about:         Info-Dialog mit Zitatpool
+- absturz:       Fehlerdialog statt wortlosem Abbruch
+- zelle:         Zell-Delegate mit Innenabstand und Trefferhervorhebung
 - einstellungen: Geruest fuer Einstellungsdialoge, Seiten Darstellung und Speicherort
 - farbe:         Farbeingaben normalisieren
 - theme:      Palette, Stylesheet, Fusion-Grundeinstellung, Erscheinungsbild
@@ -19,6 +21,7 @@ wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 """
 
 from .about import AboutDialog, Zitat, lade_zitate
+from .absturz import FehlerDialog, baue_bericht, einhaengen
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .einstellungen import BasisEinstellungenDialog, Darstellung
 from .farbe import ist_hell, normalisiere
@@ -52,8 +55,9 @@ from .theme import (
     umschalten,
     zoom,
 )
+from .zelle import ZELLRAND_RECHTS, ZellDelegate
 
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
@@ -67,6 +71,7 @@ __all__ = [
     "DisclaimerDialog",
     "DisclaimerStore",
     "Farben",
+    "FehlerDialog",
     "GLYPHEN",
     "HELL",
     "LIABILITY",
@@ -74,15 +79,19 @@ __all__ = [
     "SPRACHEN",
     "STANDARD_AKZENT",
     "STANDARD_ZOOM",
+    "ZELLRAND_RECHTS",
     "ZOOMSTUFEN",
+    "ZellDelegate",
     "Zitat",
     "__author__",
     "__version__",
     "akzent",
     "akzent_namen",
     "anwenden",
+    "baue_bericht",
     "baue_palette",
     "baue_qss",
+    "einhaengen",
     "farben",
     "ist_dunkel",
     "ist_hell",

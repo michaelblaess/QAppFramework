@@ -24,6 +24,20 @@ TEXTE: dict[str, dict[str, str]] = {
     "akzent.violett": {"de": "Violett", "en": "Violet"},
     "about.titel": {"de": "Über", "en": "About"},
     "common.schliessen": {"de": "Schließen", "en": "Close"},
+    "absturz.titel": {"de": "Ein Fehler ist aufgetreten", "en": "Something went wrong"},
+    "absturz.erklaerung": {
+        "de": (
+            "Entschuldige bitte. Der Bericht unten hilft bei der Ursachensuche - Du kannst ihn "
+            "kopieren und weitergeben. Weiterarbeiten ist möglich, kann aber zu Folgefehlern führen."
+        ),
+        "en": (
+            "Sorry about that. The report below helps to find the cause - you can copy it and "
+            "pass it on. Carrying on is possible but may lead to follow-up errors."
+        ),
+    },
+    "absturz.kopieren": {"de": "Bericht kopieren", "en": "Copy report"},
+    "absturz.beenden": {"de": "Beenden", "en": "Quit"},
+    "absturz.weiter": {"de": "Weiterarbeiten", "en": "Carry on"},
     "einstellungen.titel": {"de": "Einstellungen", "en": "Settings"},
     "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},
