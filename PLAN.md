@@ -148,16 +148,24 @@ sie wandern mit dem Umbau der jeweiligen Stelle, nicht auf Vorrat.
   dieselbe Zoom-Skalierung wie die der Bibliothek, sonst bleiben genau die auf
   fester Groesse.
 
-### Was noch offen ist
+### Nachgezogen am 23.08.2026 (0.10.0)
 
-Belegte Luecken in SiteHammer, keine Kuer:
+Die beiden Luecken sind geschlossen. `absturz` und `zelle` liegen jetzt hier,
+jira-timesheet-qt spart weitere 255 Zeilen, SiteHammer hat beides zum ersten
+Mal - vorher endete dort eine unbehandelte Ausnahme wortlos, und in allen vier
+Tabellen klebte der Zelltext an der Spaltenkante.
 
-- **Absturzschutz.** jira-timesheet-qt hat einen (160 Zeilen), SiteHammer
-  keinen. Ein unbehandelter Fehler beendet dort die Anwendung mitten im Lauf.
-- **Zellen-Innenabstand.** jira-timesheet-qt zeichnet ihn ueber einen Delegate
-  (152 Zeilen), SiteHammer hat fuenf Tabellen ohne. Qt gibt dem Zelltext vier
-  Bildpunkte bis zur Kante.
+Zwei Dinge sind beim Umzug allgemeiner geworden: der Fehlerbericht bekommt Name
+und Version als Argument statt sie zu importieren, und optional eine Ablage
+(`mitschreiben`), die den Absturz ueberlebt.
 
-Wenn der zweite Nutzer da ist: Toast, Protokoll-Andockfenster, Leerzustand,
-Schriftauswahl. Sie wandern mit dem Umbau der jeweiligen Stelle, nicht auf
-Vorrat.
+Ein Befund aus dem Umbau: ein Test in jira-timesheet-qt patchte
+`crash_guard.ErrorDialog`, um den modalen Dialog fernzuhalten. Nach dem Umzug
+greift das ins Leere - die Bibliothek baut ihren eigenen Dialog, und der Test
+blockierte im echten. Wer einen Baustein herausloest, muss auch pruefen, wo
+seine Tests hingreifen.
+
+### Wenn der zweite Nutzer da ist
+
+Toast, Protokoll-Andockfenster, Leerzustand, Schriftauswahl. Sie wandern mit
+dem Umbau der jeweiligen Stelle, nicht auf Vorrat.
