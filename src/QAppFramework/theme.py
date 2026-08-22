@@ -88,6 +88,7 @@ HELL = Farben(
 )
 
 RADIUS_SM = 4
+RADIUS_MD = 6
 
 # Qt liefert fuer Werkzeugleisten von sich aus 24 Pixel. jira-timesheet-qt setzt
 # nichts anderes, also wird hier ebenfalls nichts gesetzt. Der Wert steht nur
@@ -375,7 +376,20 @@ def baue_qss(p: Farben) -> str:
     #Stat {{ border: 1px solid {p.border}; border-radius: {RADIUS_SM}px; padding: 2px 8px; }}
     #EmptyTitle {{ font-size: 19px; font-weight: bold; }}
     #EmptyText {{ color: {p.text_secondary}; }}
+    #EmptyCard {{ background-color: {p.bg_secondary}; border: 1px solid {p.border};
+                  border-radius: 12px; }}
     #Hint {{ color: {p.text_secondary}; }}
+    /* Der Haftungshinweis wohnt in dieser Bibliothek - seine Regeln standen
+       aber nur in jira-timesheet-qt. Derselbe Dialog sah deshalb in jeder
+       Anwendung anders aus. */
+    #DisclaimerTitle {{ font-size: 20px; font-weight: 700; color: {p.text_primary}; }}
+    #DisclaimerSection {{ font-size: 13px; font-weight: 700; color: {p.text_primary};
+                          padding-top: 4px; }}
+    #DisclaimerText {{ color: {p.text_secondary}; font-size: 13px; }}
+    #DisclaimerScroll {{ background-color: {p.bg_secondary}; border: 1px solid {p.border};
+                         border-radius: {RADIUS_MD}px; padding: 14px; }}
+    #DisclaimerScroll > QWidget > QWidget {{ background-color: {p.bg_secondary}; }}
+
     #SettingsNav {{ background-color: {p.bg_secondary}; border: none;
                     border-right: 1px solid {p.border}; padding: 14px 8px; outline: 0; }}
     #SettingsNav::item {{ padding: 9px 12px; border-radius: {RADIUS_SM}px;

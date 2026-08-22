@@ -154,7 +154,7 @@ class DisclaimerDialog(QDialog):
         aussen.setSpacing(12)
 
         kopf = QLabel(f"{app_name}\n{title}")
-        kopf.setObjectName("EmptyTitle")
+        kopf.setObjectName("DisclaimerTitle")
         aussen.addWidget(kopf)
 
         aussen.addWidget(self._scrollbereich(), 1)
@@ -165,7 +165,7 @@ class DisclaimerDialog(QDialog):
         aussen.addWidget(self._haken)
 
         hinweis = QLabel(HINWEIS)
-        hinweis.setObjectName("Hint")
+        hinweis.setObjectName("DisclaimerText")
         hinweis.setWordWrap(True)
         aussen.addWidget(hinweis)
 
@@ -196,25 +196,29 @@ class DisclaimerDialog(QDialog):
         senkrecht.setSpacing(10)
 
         einleitung = QLabel(self._intro)
+        einleitung.setObjectName("DisclaimerText")
         einleitung.setWordWrap(True)
         senkrecht.addWidget(einleitung)
 
         ueberschrift = QLabel(DUTIES_TITLE)
+        ueberschrift.setObjectName("DisclaimerSection")
         ueberschrift.setWordWrap(True)
         senkrecht.addWidget(ueberschrift)
 
         for pflicht in self._duties:
             zeile = QLabel(f"•  {pflicht}")
+            zeile.setObjectName("DisclaimerText")
             zeile.setWordWrap(True)
             senkrecht.addWidget(zeile)
 
         haftung = QLabel(haftungsabsatz(self._autor))
         haftung.setWordWrap(True)
-        haftung.setObjectName("Hint")
+        haftung.setObjectName("DisclaimerText")
         senkrecht.addWidget(haftung)
         senkrecht.addStretch(1)
 
         bereich = QScrollArea()
+        bereich.setObjectName("DisclaimerScroll")
         bereich.setWidgetResizable(True)
         bereich.setWidget(inhalt)
         bereich.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
