@@ -376,6 +376,21 @@ def baue_qss(p: Farben) -> str:
     #EmptyTitle {{ font-size: 19px; font-weight: bold; }}
     #EmptyText {{ color: {p.text_secondary}; }}
     #Hint {{ color: {p.text_secondary}; }}
+    #AboutBanner {{ background-color: {p.bg_secondary}; border-bottom: 1px solid {p.border}; }}
+    #AboutName {{ font-size: 26px; font-weight: 800; color: {p.text_primary}; }}
+    #AboutBannerText {{ color: {p.text_secondary}; font-size: 13px; }}
+    /* Die Versionsmarke in Festbreitenschrift. Nur echte Familien nennen -
+       ein Gattungsname wie "monospace" ist in Qt keine Familie und ergibt
+       Kaestchen. */
+    #AboutBadge {{ background-color: {p.accent}; color: #ffffff;
+                   font-family: Consolas, Menlo, "DejaVu Sans Mono";
+                   font-size: 12px; font-weight: 700;
+                   padding: 3px 12px; border-radius: 9px; }}
+    #AboutFacts {{ color: {p.text_tertiary}; font-size: 12px; }}
+    #AboutQuote {{ color: {p.text_secondary}; font-size: 13px; font-style: italic; }}
+    #AboutQuoteAuthor {{ color: {p.text_tertiary}; font-size: 12px; padding-top: 6px; }}
+    #AboutLink {{ font-size: 12px; }}
+    #AboutLink a {{ color: {p.accent_hover}; text-decoration: none; }}
     #Divider {{ background-color: {p.border}; max-height: 1px; min-height: 1px; border: none; }}
     #DialogButtons {{ background-color: {p.bg_secondary}; border-top: 1px solid {p.border}; }}
     #StepNumber {{ color: #ffffff; background-color: {p.accent};

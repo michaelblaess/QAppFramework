@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "QAppFramework"
-version = "0.3.0"
+version = "0.4.0"
 description = "Gemeinsame Bausteine fuer PySide6-Anwendungen: Erscheinungsbild, Sinnbilder und wiederkehrende Dialoge"
 license = "Apache-2.0"
 requires-python = ">=3.12"
@@ -38,7 +38,7 @@ where = ["src"]
 # PEP 561. Ohne diesen Marker ignorieren Konsumenten die Typangaben und
 # brauchen einen mypy-Override je Anwendung.
 [tool.setuptools.package-data]
-QAppFramework = ["py.typed"]
+QAppFramework = ["py.typed", "quotes/*.json"]
 
 [tool.ruff]
 line-length = 120

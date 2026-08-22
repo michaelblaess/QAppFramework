@@ -22,6 +22,8 @@ TEXTE: dict[str, dict[str, str]] = {
     "akzent.gruen": {"de": "Grün", "en": "Green"},
     "akzent.tuerkis": {"de": "Türkis", "en": "Turquoise"},
     "akzent.violett": {"de": "Violett", "en": "Violet"},
+    "about.titel": {"de": "Über", "en": "About"},
+    "common.schliessen": {"de": "Schließen", "en": "Close"},
     "modus.system": {"de": "Wie das Betriebssystem", "en": "Match the system"},
     "modus.dark": {"de": "Dunkel", "en": "Dark"},
     "modus.light": {"de": "Hell", "en": "Light"},

@@ -5,6 +5,7 @@ wer von einer zur naechsten wechselt, soll sich nicht umgewoehnen muessen.
 
 Enthalten:
 
+- about:      Info-Dialog mit Zitatpool
 - theme:      Palette, Stylesheet, Fusion-Grundeinstellung, Erscheinungsbild
               (hell/dunkel/System), Akzentfarbe und Zoom als Zustand
 - texte:      die wenigen zweisprachigen Woerter der Bibliothek
@@ -15,6 +16,7 @@ Bewusst NICHT enthalten: alles, was nur eine Anwendung braucht. Ein Baustein
 wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 """
 
+from .about import AboutDialog, Zitat, lade_zitate
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .icons import GLYPHEN, lade_icon
 from .texte import SPRACHEN, text
@@ -45,17 +47,19 @@ from .theme import (
     zoom,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
     "AKZENTE",
+    "AboutDialog",
     "Akzent",
     "DISCLAIMER_VERSION",
     "DUNKEL",
     "DisclaimerDialog",
     "DisclaimerStore",
     "Farben",
+    "Zitat",
     "GLYPHEN",
     "HELL",
     "LIABILITY",
@@ -73,6 +77,7 @@ __all__ = [
     "baue_qss",
     "farben",
     "ist_dunkel",
+    "lade_zitate",
     "lade_icon",
     "modus",
     "naechster_zoom",
