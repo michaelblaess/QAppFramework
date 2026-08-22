@@ -66,6 +66,42 @@ class TestZitatpool:
     def test_eine_unbekannte_sprache_ergibt_deutsch(self) -> None:
         assert lade_zitate("kl") == lade_zitate("de")
 
+    def test_kein_geschuetzter_autor_im_pool(self) -> None:
+        """Nur gemeinfreie Autoren - der Schutz endet 70 Jahre nach dem Tod (Paragraf 64 UrhG).
+
+        Die Namen unten sind die, die inhaltlich gepasst haetten und deshalb
+        immer wieder hereinrutschen. Martin Luther King ist bis Ende 2038
+        geschuetzt und stand bis August 2026 fest im Code des Dialogs von
+        jira-timesheet-qt.
+
+        Der Test steht hier und nicht in den Anwendungen: der Pool liegt in
+        dieser Bibliothek, ein Rueckfall traefe sonst alle gleichzeitig, und
+        jede haette ihren eigenen kleinen Test - oder eben keinen.
+        """
+        gesperrt = (
+            "martin luther king",
+            "albert schweitzer",
+            "c.s. lewis",
+            "corrie ten boom",
+            "martin fowler",
+        )
+        for sprache in ("de", "en"):
+            for zitat in lade_zitate(sprache):
+                name = zitat.autor.casefold()
+                for verboten in gesperrt:
+                    assert verboten not in name, f"{zitat.autor} ist nicht gemeinfrei ({sprache})"
+
+    def test_jeder_eintrag_nennt_seine_rechtelage(self) -> None:
+        """Jeder Eintrag der Paketdatei sagt, warum er verwendet werden darf."""
+        import json
+        from importlib import resources
+
+        roh = (resources.files("QAppFramework") / "quotes" / "quotes.json").read_text(encoding="utf-8")
+        eintraege = json.loads(roh)["zitate"]
+        assert eintraege
+        for eintrag in eintraege:
+            assert eintrag.get("rechte", "").strip(), eintrag.get("autor")
+
 
 class TestAboutDialog:
     def test_name_version_und_angaben_stehen_da(self, app: QApplication) -> None:
