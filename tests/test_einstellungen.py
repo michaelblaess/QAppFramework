@@ -191,3 +191,38 @@ class TestSprache:
         assert {k.text() for k in d.findChildren(QPushButton)} >= {"Save", "Cancel"}
         assert d.windowTitle() == "Settings"
         d.close()
+
+
+class TestErweiterteDarstellung:
+    """Eigene Zeilen auf der Darstellungs-Seite.
+
+    Fuer Markierungsfarben und Ampelschwellen: sie gehoeren fuer den Anwender
+    zur Darstellung, auch wenn nur eine Anwendung sie kennt.
+    """
+
+    def test_eigene_zeilen_stehen_auf_der_seite(self, app: QApplication) -> None:
+        from PySide6.QtWidgets import QCheckBox, QFormLayout
+
+        class MitErweiterung(ProbeDialog):
+            def darstellung_erweitern(self, formular: QFormLayout) -> None:
+                self.haken = QCheckBox("Manuelle Zeiten hervorheben")
+                formular.addRow(self.beschriftung(""), self.haken)
+
+        d = MitErweiterung(Darstellung())
+        d.show()
+        app.processEvents()
+        # Ueber findChild: das Widget muss wirklich im Dialog haengen, nicht
+        # nur als Feld existieren.
+        assert d.findChild(QCheckBox) is d.haken
+        # Und zwar auf der Darstellungs-Seite, nicht irgendwo.
+        nav = d.findChild(QListWidget, "SettingsNav")
+        assert nav is not None
+        nav.setCurrentRow([nav.item(i).text() for i in range(nav.count())].index("Darstellung"))
+        app.processEvents()
+        assert d.haken.isVisible(), "Die eigene Zeile steht nicht auf der Darstellungs-Seite"
+        d.close()
+
+    def test_ohne_erweiterung_bleibt_die_seite_wie_sie_ist(self, dialog: ProbeDialog) -> None:
+        from PySide6.QtWidgets import QCheckBox
+
+        assert not dialog.findChildren(QCheckBox)

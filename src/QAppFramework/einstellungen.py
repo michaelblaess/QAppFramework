@@ -161,6 +161,20 @@ class BasisEinstellungenDialog(QDialog):
     def uebernehmen(self) -> None:
         """Liest die eigenen Felder aus. Wird beim Speichern gerufen, vor accept()."""
 
+    def darstellung_erweitern(self, formular: QFormLayout) -> None:
+        """Haengt eigene Zeilen an die Darstellungs-Seite.
+
+        Fuer alles, was fuer den Anwender zur Darstellung gehoert, aber nur
+        diese eine Anwendung betrifft: Markierungsfarben, Ampelschwellen,
+        Hervorhebungen. Es waere unverstaendlich, dafuer eine zweite Seite
+        aufzumachen, nur weil die Bibliothek die erste haelt.
+
+        Args:
+            formular:
+                Das Formular der Darstellungs-Seite, nach Erscheinungsbild,
+                Akzentfarbe und Zoom.
+        """
+
     def speicherorte(self) -> Sequence[tuple[str, Path]]:
         """Wo die Anwendung ihre Daten ablegt.
 
@@ -332,6 +346,7 @@ class BasisEinstellungenDialog(QDialog):
         self._feld_zoom.setCurrentIndex(max(0, self._feld_zoom.findData(self._darstellung.zoom)))
         formular.addRow(self.beschriftung(text("einstellungen.zoom", self._sprache)), self._feld_zoom)
 
+        self.darstellung_erweitern(formular)
         formular.addRow(self.hinweis(text("einstellungen.sofort", self._sprache)))
         return seite
 
