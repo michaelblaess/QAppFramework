@@ -32,6 +32,7 @@ GLYPHEN: dict[str, str] = {
     "ueber": "mdi6.information-outline",
     "suchen": "mdi6.magnify",
     "bericht": "mdi6.file-document-outline",
+    "erscheinungsbild": "mdi6.theme-light-dark",
 }
 
 

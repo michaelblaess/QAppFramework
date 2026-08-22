@@ -203,3 +203,26 @@ class TestAnwenden:
         setze_modus(Modus.DUNKEL)
         assert anwenden(app, dunkel=False).bg_primary == HELL.bg_primary
         assert modus() is Modus.DUNKEL
+
+
+class TestUmschalten:
+    def test_umschalten_wechselt_und_wendet_an(self, app: QApplication) -> None:
+        """Der Umschalter der Werkzeugleiste - ein Aufruf, sichtbares Ergebnis."""
+        from QAppFramework.theme import umschalten
+
+        setze_modus(Modus.HELL)
+        anwenden(app)
+        vorher = app.palette().color(QPalette.ColorRole.Window).name()
+
+        neuer = umschalten(app)
+
+        assert neuer is Modus.DUNKEL
+        assert modus() is Modus.DUNKEL
+        assert app.palette().color(QPalette.ColorRole.Window).name() != vorher
+
+    def test_zweimal_umschalten_ist_wieder_am_anfang(self, app: QApplication) -> None:
+        from QAppFramework.theme import umschalten
+
+        setze_modus(Modus.DUNKEL)
+        umschalten(app)
+        assert umschalten(app) is Modus.DUNKEL

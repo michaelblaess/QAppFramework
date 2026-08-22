@@ -376,6 +376,18 @@ def baue_qss(p: Farben) -> str:
     #EmptyTitle {{ font-size: 19px; font-weight: bold; }}
     #EmptyText {{ color: {p.text_secondary}; }}
     #Hint {{ color: {p.text_secondary}; }}
+    #SettingsNav {{ background-color: {p.bg_secondary}; border: none;
+                    border-right: 1px solid {p.border}; padding: 14px 8px; outline: 0; }}
+    #SettingsNav::item {{ padding: 9px 12px; border-radius: {RADIUS_SM}px;
+                          color: {p.text_secondary}; font-weight: 600; }}
+    #SettingsNav::item:hover {{ background-color: {p.bg_tertiary}; color: {p.text_primary}; }}
+    #SettingsNav::item:selected {{ background-color: {p.accent_subtle}; color: {p.accent}; }}
+    #SettingsHeading {{ font-size: 17px; font-weight: 700; color: {p.text_primary}; }}
+    #SettingsLabel {{ color: {p.text_secondary}; font-weight: 600; }}
+    #SettingsHint {{ color: {p.text_tertiary}; font-size: 12px; }}
+    #SettingsPath {{ color: {p.text_secondary}; font-size: 12px;
+                     font-family: Consolas, Menlo, "DejaVu Sans Mono"; }}
+
     #AboutBanner {{ background-color: {p.bg_secondary}; border-bottom: 1px solid {p.border}; }}
     #AboutName {{ font-size: 26px; font-weight: 800; color: {p.text_primary}; }}
     #AboutBannerText {{ color: {p.text_secondary}; font-size: 13px; }}
@@ -396,6 +408,25 @@ def baue_qss(p: Farben) -> str:
     #StepNumber {{ color: #ffffff; background-color: {p.accent};
                       border-radius: 11px; font-weight: bold; }}
     """)
+
+
+def umschalten(app: QGuiApplication) -> Modus:
+    """Wechselt zwischen hell und dunkel und wendet den Wechsel an.
+
+    Fuer den Umschalter in der Werkzeugleiste. Die Anwendung muss danach nur
+    noch zweierlei tun: den neuen Modus speichern und ihre selbstgezeichneten
+    Flaechen neu einfaerben.
+
+    Args:
+        app:
+            Die laufende Anwendung.
+
+    Returns:
+        Der neue Modus - zum Speichern.
+    """
+    setze_modus(umgeschaltet())
+    anwenden(app)
+    return _modus
 
 
 def anwenden(app: QGuiApplication, dunkel: bool | None = None) -> Farben:
