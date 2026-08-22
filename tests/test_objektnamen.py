@@ -44,16 +44,39 @@ def app() -> QApplication:
 
 
 def _gezeichnet(app: QApplication, name: str) -> bytes:
-    """Zeichnet eine Beschriftung mit diesem Objektnamen in ein Bild."""
+    """Zeichnet eine Beschriftung mit diesem Objektnamen und gibt die Bildpunkte.
+
+    Zwei Dinge sind noetig, damit der Vergleich etwas taugt:
+
+    Das Widget wird gezeigt (aber nicht auf den Schirm gelassen), sonst ist das
+    Layout noch nicht durch und das Bild faellt mal mit, mal ohne fertige
+    Auszeichnung aus - der Test schlug daraufhin gelegentlich fehl, ohne dass
+    sich etwas geaendert hatte.
+
+    Und gezeichnet wird in ein vorgefuelltes Bild statt ueber grab(): dessen
+    Pixmap ist dort, wo das Widget nichts malt, uninitialisiert. Zwei Aufnahmen
+    desselben Widgets unterschieden sich damit zuverlaessig - gemessen.
+
+    Das QImage braucht eine eigene Variable. Bei toImage().constBits() gibt
+    Python das Bild frei, bevor die Bildpunkte gelesen sind - der Zeiger
+    zeigt dann auf fremden Speicher, und die ersten Bytes wechselten von
+    Aufruf zu Aufruf (01000000 / 500143f6, gemessen). Der Test fiel dadurch
+    in zwei von zehn Laeufen, ohne dass sich etwas geaendert hatte.
+    """
     app.setStyleSheet(baue_qss(HELL))
     label = QLabel("Beispiel")
     label.setObjectName(name)
+    label.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
     label.resize(220, 44)
-    label.ensurePolished()
+    label.show()
+    app.processEvents()
     bild = QPixmap(220, 44)
     bild.fill(Qt.GlobalColor.magenta)
     label.render(bild)
-    return bild.toImage().copy().constBits().tobytes()
+    aufnahme = bild.toImage()
+    punkte = aufnahme.constBits().tobytes()
+    label.close()
+    return punkte
 
 
 class TestObjektnamen:

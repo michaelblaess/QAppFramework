@@ -5,7 +5,9 @@ wer von einer zur naechsten wechselt, soll sich nicht umgewoehnen muessen.
 
 Enthalten:
 
-- theme:      Palette, Stylesheet, Fusion-Grundeinstellung
+- theme:      Palette, Stylesheet, Fusion-Grundeinstellung, Erscheinungsbild
+              (hell/dunkel/System), Akzentfarbe und Zoom als Zustand
+- texte:      die wenigen zweisprachigen Woerter der Bibliothek
 - icons:      Sinnbilder ueber QtAwesome, zur Laufzeit einfaerbbar
 - disclaimer: bestaetigungspflichtiger Haftungshinweis beim ersten Start
 
@@ -15,26 +17,70 @@ wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .icons import GLYPHEN, lade_icon
-from .theme import DUNKEL, HELL, Farben, anwenden, baue_palette, baue_qss, farben, ist_dunkel
+from .texte import SPRACHEN, text
+from .theme import (
+    AKZENTE,
+    DUNKEL,
+    HELL,
+    STANDARD_AKZENT,
+    STANDARD_ZOOM,
+    ZOOMSTUFEN,
+    Akzent,
+    Farben,
+    Modus,
+    akzent,
+    akzent_namen,
+    anwenden,
+    baue_palette,
+    baue_qss,
+    farben,
+    ist_dunkel,
+    modus,
+    naechster_zoom,
+    setze_akzent,
+    setze_modus,
+    setze_zoom,
+    system_ist_dunkel,
+    umgeschaltet,
+    zoom,
+)
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
+    "AKZENTE",
+    "Akzent",
     "DISCLAIMER_VERSION",
     "DUNKEL",
-    "GLYPHEN",
-    "HELL",
-    "LIABILITY",
     "DisclaimerDialog",
     "DisclaimerStore",
     "Farben",
+    "GLYPHEN",
+    "HELL",
+    "LIABILITY",
+    "Modus",
+    "SPRACHEN",
+    "STANDARD_AKZENT",
+    "STANDARD_ZOOM",
+    "ZOOMSTUFEN",
     "__author__",
     "__version__",
+    "akzent",
+    "akzent_namen",
     "anwenden",
     "baue_palette",
     "baue_qss",
     "farben",
     "ist_dunkel",
     "lade_icon",
+    "modus",
+    "naechster_zoom",
+    "setze_akzent",
+    "setze_modus",
+    "setze_zoom",
+    "system_ist_dunkel",
+    "text",
+    "umgeschaltet",
+    "zoom",
 ]
