@@ -1,6 +1,9 @@
 # QAppFramework - Ausbau zur gemeinsamen Grundlage
 
-Stand 23.08.2026. Ausgangslage: die Bibliothek trägt Farben, Sinnbilder und den
+**Erledigt am 23.08.2026** (0.9.0). Was hier als Plan stand, ist gebaut -
+die Abschnitte bleiben als Begruendung stehen, warum es so aussieht.
+
+Stand vorher: Ausgangslage: die Bibliothek trägt Farben, Sinnbilder und den
 Haftungshinweis. Alles andere steht doppelt in jira-timesheet-qt und SiteHammer
 oder fehlt in SiteHammer ganz.
 
@@ -107,3 +110,54 @@ Keine Kür, sondern Mängel:
 Toast, Protokoll-Andockfenster, Leerzustand, Schriftauswahl. Alle vier stehen
 heute in jira-timesheet-qt, drei davon in ähnlicher Form auch in SiteHammer -
 sie wandern mit dem Umbau der jeweiligen Stelle, nicht auf Vorrat.
+
+
+---
+
+## Was daraus geworden ist (23.08.2026)
+
+| | vorher | nachher |
+| --- | --- | --- |
+| QAppFramework | 518 Zeilen, 3 Bausteine | rund 1900 Zeilen, 7 Bausteine, 82 Tests |
+| jira-timesheet-qt: `ui/theme.py` | 774 | 160 |
+| jira-timesheet-qt: Info-Dialog | 184 | 35 |
+| jira-timesheet-qt: Haftungshinweis | 190 | 33 |
+| jira-timesheet-qt: Einstellungen | 1239 | 1006 |
+| SiteHammer: Info, Einstellungen, Umschalter | fehlten | aus der Bibliothek |
+
+1153 Zeilen weniger in jira-timesheet-qt, und sie stehen nicht mehr doppelt.
+
+### Befunde, die beim Bauen aufgefallen sind
+
+- **Der Info-Dialog schnitt das laengste Zitat ab** (43 statt 73 Bildpunkte).
+  Ein QLabel mit Wortumbruch meldet als Wunschgroesse eine Zeile;
+  setSizePolicy(heightForWidth), adjustSize und alle drei
+  Groessenbeschraenkungen des Layouts aendern nichts. Wirksam ist ein
+  Nachschlag im showEvent, sobald die Breite feststeht.
+- **Der Haftungshinweis wohnte hier, seine Stylesheet-Regeln nicht.** Derselbe
+  Dialog sah in jeder Anwendung anders aus.
+- **`#EmptyCard` war ungestylt** - SiteHammer setzt den Namen, eine Regel gab
+  es nie.
+- **grab() taugt nicht fuer Bildvergleiche**: wo das Widget nichts malt, ist
+  die Pixmap uninitialisiert, zwei Aufnahmen desselben Widgets unterscheiden
+  sich zuverlaessig.
+- **toImage().constBits() liest freigegebenen Speicher.** Das Bild braucht eine
+  eigene Variable, sonst wechseln die ersten Bytes von Aufruf zu Aufruf und ein
+  Test faellt in zwei von zehn Laeufen.
+- **Eine Anwendung braucht `skaliere()`**: ihre eigenen Regeln muessen durch
+  dieselbe Zoom-Skalierung wie die der Bibliothek, sonst bleiben genau die auf
+  fester Groesse.
+
+### Was noch offen ist
+
+Belegte Luecken in SiteHammer, keine Kuer:
+
+- **Absturzschutz.** jira-timesheet-qt hat einen (160 Zeilen), SiteHammer
+  keinen. Ein unbehandelter Fehler beendet dort die Anwendung mitten im Lauf.
+- **Zellen-Innenabstand.** jira-timesheet-qt zeichnet ihn ueber einen Delegate
+  (152 Zeilen), SiteHammer hat fuenf Tabellen ohne. Qt gibt dem Zelltext vier
+  Bildpunkte bis zur Kante.
+
+Wenn der zweite Nutzer da ist: Toast, Protokoll-Andockfenster, Leerzustand,
+Schriftauswahl. Sie wandern mit dem Umbau der jeweiligen Stelle, nicht auf
+Vorrat.
