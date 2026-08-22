@@ -46,13 +46,14 @@ from .theme import (
     setze_akzent,
     setze_modus,
     setze_zoom,
+    skaliere,
     system_ist_dunkel,
     umgeschaltet,
     umschalten,
     zoom,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
@@ -93,6 +94,7 @@ __all__ = [
     "setze_akzent",
     "setze_modus",
     "setze_zoom",
+    "skaliere",
     "system_ist_dunkel",
     "text",
     "umgeschaltet",

@@ -291,8 +291,12 @@ def baue_palette(p: Farben) -> QPalette:
     return qp
 
 
-def _skaliere(qss: str) -> str:
-    """Rechnet den aktiven Zoom in alle Schriftgroessen des Stylesheets ein.
+def skaliere(qss: str) -> str:
+    """Rechnet den aktiven Zoom in alle Schriftgroessen eines Stylesheets ein.
+
+    Oeffentlich, weil eine Anwendung ihre eigenen Regeln an das Stylesheet der
+    Bibliothek anhaengt. Ohne diesen Durchgang blieben genau die auf fester
+    Groesse, waehrend der Rest mitwaechst.
 
     Ein Durchgang ueber das fertige Stylesheet statt einer Rechnung an jeder
     einzelnen Stelle. Die selbstgezeichneten Ansichten ziehen mit, ohne etwas
@@ -316,7 +320,7 @@ def baue_qss(p: Farben) -> str:
     jira-timesheet-qt uebernommen - Abstaende, Schriftstaerken und Farben
     inbegriffen. Wer hier etwas aendert, bricht die Wiedererkennung.
     """
-    return _skaliere(f"""
+    return skaliere(f"""
     QWidget {{ font-size: 13px; }}
     /* Die globale Flaechenregel wuerde sonst jedem Beschriftungsfeld einen
        eigenen Kasten geben. */

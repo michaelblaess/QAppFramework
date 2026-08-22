@@ -226,3 +226,23 @@ class TestUmschalten:
         setze_modus(Modus.DUNKEL)
         umschalten(app)
         assert umschalten(app) is Modus.DUNKEL
+
+
+class TestEigenesStylesheet:
+    def test_eigene_regeln_lassen_sich_mitskalieren(self) -> None:
+        """Eine Anwendung haengt eigene Regeln an - die muessen mitwachsen.
+
+        Ohne das bleiben genau die auf fester Groesse, waehrend der Rest der
+        Oberflaeche zoomt. Aufgefallen beim Umbau von jira-timesheet-qt.
+        """
+        from QAppFramework.theme import skaliere
+
+        setze_zoom(200)
+        assert skaliere("#Eigen { font-size: 13px; }") == "#Eigen { font-size: 26px; }"
+
+    def test_ohne_zoom_bleibt_der_text_wie_er_ist(self) -> None:
+        from QAppFramework.theme import skaliere
+
+        setze_zoom(STANDARD_ZOOM)
+        eigen = "#Eigen { font-size: 13px; }"
+        assert skaliere(eigen) == eigen
