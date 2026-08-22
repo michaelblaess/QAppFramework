@@ -181,11 +181,11 @@ def baue_qss(p: Farben) -> str:
     QDockWidget::title {{ background-color: {p.bg_secondary}; padding: 5px 8px;
                           border-top: 1px solid {p.border}; }}
 
-    #Kennzahl {{ border: 1px solid {p.border}; border-radius: {RADIUS_SM}px; padding: 2px 8px; }}
-    #LeerTitel {{ font-size: 19px; font-weight: bold; }}
-    #LeerText {{ color: {p.text_secondary}; }}
-    #Hinweis {{ color: {p.text_secondary}; }}
-    #SchrittNummer {{ color: #ffffff; background-color: {p.accent};
+    #Stat {{ border: 1px solid {p.border}; border-radius: {RADIUS_SM}px; padding: 2px 8px; }}
+    #EmptyTitle {{ font-size: 19px; font-weight: bold; }}
+    #EmptyText {{ color: {p.text_secondary}; }}
+    #Hint {{ color: {p.text_secondary}; }}
+    #StepNumber {{ color: #ffffff; background-color: {p.accent};
                       border-radius: 11px; font-weight: bold; }}
     """
 

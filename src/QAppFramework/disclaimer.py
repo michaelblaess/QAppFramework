@@ -154,7 +154,7 @@ class DisclaimerDialog(QDialog):
         aussen.setSpacing(12)
 
         kopf = QLabel(f"{app_name}\n{title}")
-        kopf.setObjectName("LeerTitel")
+        kopf.setObjectName("EmptyTitle")
         aussen.addWidget(kopf)
 
         aussen.addWidget(self._scrollbereich(), 1)
@@ -165,7 +165,7 @@ class DisclaimerDialog(QDialog):
         aussen.addWidget(self._haken)
 
         hinweis = QLabel(HINWEIS)
-        hinweis.setObjectName("Hinweis")
+        hinweis.setObjectName("Hint")
         hinweis.setWordWrap(True)
         aussen.addWidget(hinweis)
 
@@ -210,7 +210,7 @@ class DisclaimerDialog(QDialog):
 
         haftung = QLabel(haftungsabsatz(self._autor))
         haftung.setWordWrap(True)
-        haftung.setObjectName("Hinweis")
+        haftung.setObjectName("Hint")
         senkrecht.addWidget(haftung)
         senkrecht.addStretch(1)
 

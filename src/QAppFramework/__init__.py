@@ -17,7 +17,7 @@ from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, Disclai
 from .icons import GLYPHEN, lade_icon
 from .theme import DUNKEL, HELL, Farben, anwenden, baue_palette, baue_qss, farben, ist_dunkel
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
