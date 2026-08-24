@@ -74,7 +74,9 @@ def _gezeichnet(app: QApplication, name: str) -> bytes:
     bild.fill(Qt.GlobalColor.magenta)
     label.render(bild)
     aufnahme = bild.toImage()
-    punkte = aufnahme.constBits().tobytes()
+    # constBits() liefert bytes | bytearray | memoryview - bytes() deckt alle drei
+    # ab und kopiert, bevor das QImage aus dem Griff geht (siehe qt-specialist).
+    punkte = bytes(aufnahme.constBits())
     label.close()
     return punkte
 

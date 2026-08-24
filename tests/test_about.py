@@ -8,7 +8,7 @@ ueber die Hoehe, und die haengt am laengsten Zitat des Pools.
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
+from typing import Any
 
 import pytest
 
@@ -32,8 +32,8 @@ def app() -> QApplication:
     return fertig
 
 
-def _dialog(app: QApplication, **abweichend: object) -> Iterator[AboutDialog]:
-    vorgabe: dict[str, object] = {
+def _dialog(app: QApplication, **abweichend: Any) -> AboutDialog:
+    vorgabe: dict[str, Any] = {
         "autor": "Michael Blaess",
         "jahr": "2026",
         "beschreibung": "Prüft Webseiten in einem Durchlauf.",
@@ -41,11 +41,22 @@ def _dialog(app: QApplication, **abweichend: object) -> Iterator[AboutDialog]:
         "zitat": PROBE,
     }
     vorgabe.update(abweichend)
-    dialog = AboutDialog("Beispiel", "1.2.3", **vorgabe)  # type: ignore[arg-type]
+    dialog = AboutDialog("Beispiel", "1.2.3", **vorgabe)
     dialog.show()
     app.processEvents()
-    return dialog  # type: ignore[return-value]
+    return dialog
 
+
+
+def beschriftung(dialog: AboutDialog, name: str) -> QLabel:
+    """Die Beschriftung mit diesem Objektnamen, mit Zusicherung.
+
+    `findChild` liefert `QLabel | None`. Ein `type: ignore` daneben verschweigt
+    nur den AttributeError - so nennt der Fehlschlag den fehlenden Namen.
+    """
+    gefunden = dialog.findChild(QLabel, name)
+    assert gefunden is not None, f"Beschriftung {name} fehlt im Dialog"
+    return gefunden
 
 class TestZitatpool:
     def test_beide_sprachen_sind_vollstaendig(self) -> None:
@@ -108,7 +119,7 @@ class TestAboutDialog:
         dialog = _dialog(app)
         assert dialog.findChild(QLabel, "AboutName").text() == "Beispiel"  # type: ignore[union-attr]
         assert dialog.findChild(QLabel, "AboutBadge").text() == "1.2.3"  # type: ignore[union-attr]
-        angaben = dialog.findChild(QLabel, "AboutFacts").text()  # type: ignore[union-attr]
+        angaben = beschriftung(dialog, "AboutFacts").text()
         assert "Michael Blaess" in angaben
         assert "2026" in angaben
         assert "Apache-2.0" in angaben, "Michaels Vorgabelizenz fehlt"
