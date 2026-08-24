@@ -126,6 +126,19 @@ uv run mypy src
 `py.typed` liegt bei (PEP 561) - die einbindenden Anwendungen bekommen die
 Typen also ohne eigenen Override.
 
+## Haftung
+
+Die Software wird ohne jede Gewährleistung bereitgestellt ("as is"), wie in der
+Lizenz geregelt. Die Haftung des Autors (Michael Blaess) für Schäden aus der
+Nutzung ist im gesetzlich zulässigen Rahmen ausgeschlossen. Die Haftung für
+Vorsatz und grobe Fahrlässigkeit, für die Verletzung von Leben, Körper oder
+Gesundheit sowie nach zwingendem Produkthaftungsrecht bleibt unberührt.
+
+Diese Bibliothek liefert zugleich den Wortlaut, den die auf ihr aufbauenden
+Anwendungen beim ersten Start anzeigen. Titel, Einleitung und die einzelnen
+Pflichten dürfen die Anwendungen ersetzen - **der Haftungsabsatz ist mit
+Absicht fest**, damit er überall gleich lautet.
+
 ## Lizenz
 
 **Business Source License 1.1** (siehe [LICENSE](LICENSE)). Lesen, selbst bauen

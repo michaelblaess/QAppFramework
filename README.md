@@ -123,6 +123,18 @@ uv run mypy src
 `py.typed` ships with the package (PEP 561), so consuming applications get the
 types without an override.
 
+## Liability
+
+The software is provided without warranty of any kind ("as is"), as set out in
+the licence. The liability of the author (Michael Blaess) for damages arising
+from its use is excluded to the extent permitted by applicable law. Liability
+for intent and gross negligence, for injury to life, body or health, and under
+mandatory product liability law remains unaffected.
+
+This library ships the wording that the applications built on it show at first
+start. Applications may replace title, intro and the individual duties - **the
+liability paragraph is fixed on purpose**, so that it reads the same everywhere.
+
 ## License
 
 **Business Source License 1.1** (see [LICENSE](LICENSE)). Reading, building and
