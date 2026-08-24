@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QAppFramework - gemeinsame Bausteine für PySide6-Anwendungen</title>
+  <meta name="description" content="Erscheinungsbild, Sinnbilder und die wiederkehrenden Dialoge für PySide6-Desktop-Anwendungen an einer Stelle - damit mehrere Werkzeuge gleich aussehen und sich gleich bedienen lassen.">
+  <link rel="stylesheet" href="css/precision.css">
+  <style>
+    .cli-table-wrap { overflow-x: auto; margin-top: 32px; }
+    .cli-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .cli-table th { text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 16px; border-bottom: 2px solid var(--border); }
+    .cli-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+    .cli-table tr:hover td { background: var(--accent-subtle); }
+    .cli-table code { font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: var(--accent-muted); padding: 2px 6px; border-radius: 4px; }
+    .install-code { display: block; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6; color: var(--accent); background: var(--accent-muted); padding: 14px 16px; border-radius: var(--radius-sm); margin-top: 12px; white-space: pre; overflow-x: auto; }
+    .choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 24px; }
+    .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; border: 1px solid rgba(128,128,128,0.35); }
+    .footer-left { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .footer-note { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--text-tertiary); }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <span class="header-repo">QAppFramework</span>
+    </div>
+    <div class="header-right">
+      <a href="#warum" class="header-link">Warum</a>
+      <a href="#module" class="header-link">Module</a>
+      <a href="#einbinden" class="header-link">Einbinden</a>
+      <a href="#lizenz" class="header-link">Lizenz</a>
+      <a href="https://github.com/michaelblaess/QAppFramework" class="header-link">GitHub</a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Erscheinungsbild wechseln">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge"><span class="dot"></span> PySide6-Bibliothek · v0.11.0</div>
+    <h1>QApp<span class="accent">Framework</span></h1>
+    <p class="hero-description">Erscheinungsbild, Sinnbilder und die wiederkehrenden Dialoge für PySide6-Desktop-Anwendungen - an einer Stelle statt in jeder Anwendung erneut. Wer von einem dieser Werkzeuge zum nächsten wechselt, soll sich nicht umgewöhnen müssen.</p>
+    <div class="hero-actions">
+      <a href="https://github.com/michaelblaess/QAppFramework" class="btn btn-primary">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub Repository
+      </a>
+      <a href="#einbinden" class="btn btn-secondary">Einbinden</a>
+    </div>
+  </section>
+
+  <!-- WARUM -->
+  <section class="section" id="warum">
+    <div class="section-label">Der Anlass</div>
+    <h2 class="section-title">Warum es sie gibt</h2>
+    <p class="section-description">Weil Abschreiben nicht skaliert. Beim Bau der zweiten Qt-Anwendung sind binnen einer Stunde zwei Abweichungen zur ersten entstanden - beide beim Abschreiben von Werten, beide erst hinterher an Bildschirmfotos aufgefallen.</p>
+
+    <div class="cli-table-wrap">
+      <table class="cli-table">
+        <thead>
+          <tr><th></th><th>erste Anwendung</th><th>zweite (falsch)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Akzent hell</td>
+            <td><span class="swatch" style="background:#e8590c"></span><code>#e8590c</code> Orange</td>
+            <td><span class="swatch" style="background:#2f6690"></span><code>#2f6690</code> Stahlblau</td>
+          </tr>
+          <tr>
+            <td>Akzent dunkel</td>
+            <td><span class="swatch" style="background:#ff922b"></span><code>#ff922b</code></td>
+            <td><span class="swatch" style="background:#4a7fa5"></span><code>#4a7fa5</code></td>
+          </tr>
+          <tr>
+            <td>Symbolgröße</td>
+            <td>24 (Qt-Vorgabe)</td>
+            <td>16</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="section-description" style="margin-top: 28px;">Die Akzentfarbe färbt den aktiven Reiter. Sie <strong>ist</strong> die Wiedererkennung. Deshalb liegt sie hier an genau einer Stelle, statt kopiert zu werden und still auseinanderzulaufen.</p>
+
+    <div class="choice-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3>Ein Paket, nicht zwei</h3>
+        <p>Eine Trennung in "stabil" und "volatil" wäre verfrüht - auf der Qt-Seite ist alles neu und klein. Bei einer Git-Abhängigkeit ist ein Versionswechsel ohnehin nur ein Commit-Hash.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔁</div>
+        <h3>Erst ab dem zweiten Nutzer</h3>
+        <p>Ein Baustein wandert hierher, wenn ihn die <strong>zweite</strong> Anwendung ebenfalls verwendet - nicht auf Vorrat. Was nur eine braucht, bleibt dort.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏷️</div>
+        <h3>Typen liegen bei</h3>
+        <p><code>py.typed</code> nach PEP 561 ist dabei. Ohne diesen Marker bräuchte jede einbindende Anwendung einen eigenen mypy-Override.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div></div>
+
+  <!-- MODULE -->
+  <section class="section" id="module">
+    <div class="section-label">Inhalt</div>
+    <h2 class="section-title">Was drin ist</h2>
+    <p class="section-description">Neun Module, alle klein, alle mit Typen.</p>
+
+    <div class="cli-table-wrap">
+      <table class="cli-table">
+        <thead>
+          <tr><th>Modul</th><th>Inhalt</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>theme</code></td><td>Farben für hell und dunkel, Palette und Stylesheet, dazu Erscheinungsbild, Akzentfarbe und Zoom als Modulzustand</td></tr>
+          <tr><td><code>icons</code></td><td><code>lade_icon(name, farbe)</code> über QtAwesome - Glyphen, die sich zur Laufzeit in jeder Farbe zeichnen lassen</td></tr>
+          <tr><td><code>about</code></td><td>Info-Dialog samt Zitatpool in den Paketdaten</td></tr>
+          <tr><td><code>einstellungen</code></td><td>Basisdialog mit den Seiten Darstellung und Speicherort, erweiterbar über vier Haken</td></tr>
+          <tr><td><code>absturz</code></td><td>Fehlerdialog statt wortlosem Abbruch, dazu geordnetes Beenden bei Strg+C</td></tr>
+          <tr><td><code>disclaimer</code></td><td>Haftungshinweis beim ersten Start, mit Fassung und Zustimmungsspeicher</td></tr>
+          <tr><td><code>zelle</code></td><td>Zell-Delegate mit Innenabstand rechts und Trefferhervorhebung</td></tr>
+          <tr><td><code>farbe</code></td><td>Farbeingaben normalisieren</td></tr>
+          <tr><td><code>texte</code></td><td>die wenigen zweisprachigen Wörter, die die Bibliothek selbst braucht</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="choice-grid" style="margin-top: 40px;">
+      <div class="feature-card">
+        <div class="feature-icon">🗄️</div>
+        <h3>Der Einstellungsdialog kennt die Ablage nicht</h3>
+        <p>Eine Anwendung hat eine getypte Klasse mit <code>save()</code>, eine andere eine Vererbung über mehrere Ebenen in SQLite. Ein gemeinsames Datenmodell gäbe es nur, wenn sich beide verbiegen. Der Basisdialog reicht deshalb nur zurück, was er selbst einstellt.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h3>Der Haftungsabsatz ist fest</h3>
+        <p>Titel, Einleitung und die einzelnen Pflichten lassen sich je Anwendung ersetzen. Der Haftungsabsatz nicht - er soll überall gleich lauten. Wer ihn ändert, muss die Fassung mitziehen, sonst sieht ihn niemand, der schon zugestimmt hat.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div></div>
+
+  <!-- EINBINDEN -->
+  <section class="section" id="einbinden">
+    <div class="section-label">Loslegen</div>
+    <h2 class="section-title">Einbinden</h2>
+    <p class="section-description">Als Git-Abhängigkeit in der <code>pyproject.toml</code>:</p>
+    <code class="install-code">dependencies = [
+    "QAppFramework @ git+https://github.com/michaelblaess/QAppFramework.git",
+]</code>
+
+    <p class="section-description" style="margin-top: 32px;">Ein paar Zeilen beim Start, und die Anwendung sieht aus wie ihre Geschwister:</p>
+    <code class="install-code">app = QApplication([])
+farben = anwenden(app)                       # Fusion + Palette + Stylesheet
+
+fenster = MeinFenster()
+einhaengen(fenster, kopfzeile="mein-werkzeug 1.0")  # Fehlerdialog statt wortlosem Abbruch
+abbruch_abfangen(app)                              # Strg+C beendet geordnet
+fenster.show()
+app.exec()</code>
+  </section>
+
+  <div class="divider"><div class="divider-line"></div></div>
+
+  <!-- LIZENZ -->
+  <section class="section" id="lizenz">
+    <div class="section-label">Nutzungsbedingungen</div>
+    <h2 class="section-title">Lizenz</h2>
+    <p class="section-description">Business Source License 1.1 - der Quelltext ist offen, die kommerzielle Verwertung nicht.</p>
+
+    <div class="choice-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧑‍💻</div>
+        <h3>Frei für Privatpersonen</h3>
+        <p>Lesen, selbst bauen und in eigenen Projekten verwenden ist kostenlos, solange das Ergebnis nicht entgeltlich angeboten wird.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏢</div>
+        <h3>Organisationen und Produkte</h3>
+        <p>Nutzung im Unternehmen oder in einem kommerziellen Produkt braucht eine kommerzielle Lizenz. Eine kurze Nachricht genügt.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗓️</div>
+        <h3>Wird später frei</h3>
+        <p>Jede Version wird vier Jahre nach ihrer Veröffentlichung automatisch zur Mozilla Public License 2.0.</p>
+      </div>
+    </div>
+
+    <p class="section-description" style="margin-top: 24px;">Die mitgelieferten Material Design Icons (über QtAwesome) bleiben Apache-2.0.</p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">
+      <span>BUSL-1.1 · Michael Blaess</span>
+      <span class="footer-note">Gebaut mit PySide6. "Qt" ist eine eingetragene Marke der Qt Company - dieses Projekt steht in keiner Verbindung zu ihr.</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/michaelblaess/QAppFramework">GitHub</a>
+      <a href="https://www.michaelblaess.de/">michaelblaess.de</a>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+</body>
+</html>
