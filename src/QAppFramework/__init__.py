@@ -8,7 +8,7 @@ Enthalten:
 - about:         Info-Dialog mit Zitatpool
 - absturz:       Fehlerdialog statt wortlosem Abbruch, geordnetes Strg+C
 - zelle:         Zell-Delegate mit Innenabstand und Trefferhervorhebung
-- einstellungen: Geruest fuer Einstellungsdialoge, Seiten Darstellung und Speicherort
+- einstellungen: Geruest fuer Einstellungsdialoge, Seiten Appearance und Speicherort
 - farbe:         Farbeingaben normalisieren
 - theme:      Palette, Stylesheet, Fusion-Grundeinstellung, Erscheinungsbild
               (hell/dunkel/System), Akzentfarbe und Zoom als Zustand
@@ -20,94 +20,94 @@ Bewusst NICHT enthalten: alles, was nur eine Anwendung braucht. Ein Baustein
 wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 """
 
-from .about import AboutDialog, Zitat, lade_zitate
-from .absturz import FehlerDialog, abbruch_abfangen, baue_bericht, einhaengen
+from .about import AboutDialog, Quote, load_quotes
+from .cell import CELL_PADDING_RIGHT, CellDelegate
+from .color import is_light, normalize
+from .crash import ErrorDialog, build_report, install_error_handler, install_interrupt_handler
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
-from .einstellungen import BasisEinstellungenDialog, Darstellung
-from .farbe import ist_hell, normalisiere
-from .icons import GLYPHEN, lade_icon
-from .texte import SPRACHEN, text
+from .icons import GLYPHS, load_icon
+from .settings import Appearance, SettingsDialogBase
+from .texts import LANGUAGES, text
 from .theme import (
-    AKZENTE,
-    DUNKEL,
-    HELL,
-    STANDARD_AKZENT,
-    STANDARD_ZOOM,
-    ZOOMSTUFEN,
-    Akzent,
-    Farben,
-    Modus,
-    akzent,
-    akzent_namen,
-    anwenden,
-    baue_palette,
-    baue_qss,
-    farben,
-    ist_dunkel,
-    modus,
-    naechster_zoom,
-    setze_akzent,
-    setze_modus,
-    setze_zoom,
-    skaliere,
-    system_ist_dunkel,
-    umgeschaltet,
-    umschalten,
+    ACCENTS,
+    DARK,
+    DEFAULT_ACCENT,
+    DEFAULT_ZOOM,
+    LIGHT,
+    ZOOM_LEVELS,
+    Accent,
+    Colors,
+    Mode,
+    accent,
+    accent_names,
+    apply_theme,
+    build_palette,
+    build_stylesheet,
+    colors,
+    is_dark,
+    mode,
+    next_zoom,
+    scale,
+    set_accent,
+    set_mode,
+    set_zoom,
+    system_is_dark,
+    toggle,
+    toggled,
     zoom,
 )
-from .zelle import ZELLRAND_RECHTS, ZellDelegate
 
 __version__ = "0.11.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
-    "AKZENTE",
+    "ACCENTS",
     "AboutDialog",
-    "Akzent",
-    "BasisEinstellungenDialog",
+    "Accent",
+    "SettingsDialogBase",
     "DISCLAIMER_VERSION",
-    "DUNKEL",
-    "Darstellung",
+    "DARK",
+    "Appearance",
     "DisclaimerDialog",
     "DisclaimerStore",
-    "Farben",
-    "FehlerDialog",
-    "GLYPHEN",
-    "HELL",
+    "Colors",
+    "ErrorDialog",
+    "GLYPHS",
+    "LIGHT",
     "LIABILITY",
-    "Modus",
-    "SPRACHEN",
-    "STANDARD_AKZENT",
-    "STANDARD_ZOOM",
-    "ZELLRAND_RECHTS",
-    "ZOOMSTUFEN",
-    "ZellDelegate",
-    "Zitat",
+    "Mode",
+    "LANGUAGES",
+    "DEFAULT_ACCENT",
+    "DEFAULT_ZOOM",
+    "CELL_PADDING_RIGHT",
+    "ZOOM_LEVELS",
+    "CellDelegate",
+    "Quote",
     "__author__",
     "__version__",
-    "abbruch_abfangen",
-    "akzent",
-    "akzent_namen",
-    "anwenden",
-    "baue_bericht",
-    "baue_palette",
-    "baue_qss",
-    "einhaengen",
-    "farben",
-    "ist_dunkel",
-    "ist_hell",
-    "lade_icon",
-    "lade_zitate",
-    "modus",
-    "naechster_zoom",
-    "normalisiere",
-    "setze_akzent",
-    "setze_modus",
-    "setze_zoom",
-    "skaliere",
-    "system_ist_dunkel",
+    "install_interrupt_handler",
+    "accent",
+    "accent_names",
+    "apply_theme",
+    "build_report",
+    "build_palette",
+    "build_stylesheet",
+    "install_error_handler",
+    "colors",
+    "is_dark",
+    "is_light",
+    "load_icon",
+    "load_quotes",
+    "mode",
+    "next_zoom",
+    "normalize",
+    "set_accent",
+    "set_mode",
+    "set_zoom",
+    "scale",
+    "system_is_dark",
     "text",
-    "umgeschaltet",
-    "umschalten",
+    "toggled",
+    "toggle",
     "zoom",
 ]

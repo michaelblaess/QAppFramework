@@ -43,12 +43,12 @@ _TREFFER_SCHRIFT = "#1c1f24"
 
 # Zusaetzlicher Rand rechts in jeder Zelle, in Pixeln. Nur rechts: der linke
 # Rand kommt vom Stil und haelt den Zelltext in einer Flucht mit der Kopfzeile.
-ZELLRAND_RECHTS = 10
+CELL_PADDING_RIGHT = 10
 
 AnyIndex = QModelIndex | QPersistentModelIndex
 
 
-class ZellDelegate(QStyledItemDelegate):
+class CellDelegate(QStyledItemDelegate):
     """Zeichnet Zelltext mit Rand rechts und hebt Treffer des Suchbegriffs hervor."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -120,7 +120,7 @@ class ZellDelegate(QStyledItemDelegate):
 
         rect = style.subElementRect(
             QStyle.SubElement.SE_ItemViewItemText, opt, opt.widget
-        ).adjusted(0, 0, -ZELLRAND_RECHTS, 0)
+        ).adjusted(0, 0, -CELL_PADDING_RIGHT, 0)
         if rect.width() <= 0:
             return
 

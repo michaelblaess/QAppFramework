@@ -1,7 +1,7 @@
 """Info-Dialog.
 
 Aufbau: farbige Kopfzone mit Name, Untertitel und Versionsmarke, darunter
-Autor, Jahr und Lizenz, ein wechselndes Zitat und die Verweise.
+Autor, Jahr und Lizenz, ein wechselndes Quote und die Verweise.
 
 Uebernommen aus jira-timesheet-qt 0.7.2. Damit wer von einer Anwendung zur
 naechsten wechselt denselben Dialog vorfindet, wird er hier gepflegt und
@@ -11,7 +11,7 @@ Der Zitatpool liegt in `quotes/quotes.json`. Die kanonische Quelle ist
 `claude-config/templates/zitate/zitate.json`, verteilt von `sync_zitate.py` -
 dort stehen auch die Aufnahmeregeln. Kurz: nur gemeinfreie Autoren (der Schutz
 endet 70 Jahre nach dem Tod, Paragraf 64 UrhG), jede Uebersetzung selbst
-erstellt, jede Quelle benennbar. Wer ein Zitat aendern will, aendert die
+erstellt, jede Quelle benennbar. Wer ein Quote aendern will, aendert die
 kanonische Datei und laesst neu verteilen - eine Aenderung hier waere beim
 naechsten Lauf wieder weg.
 """
@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .texte import pruefe_sprache, text
+from .texts import pruefe_sprache, text
 
 logger = logging.getLogger(__name__)
 
@@ -49,15 +49,15 @@ BREITE = 460
 
 
 @dataclass(frozen=True)
-class Zitat:
-    """Ein Zitat mit Urheber und belegbarer Quelle."""
+class Quote:
+    """Ein Quote mit Urheber und belegbarer Quelle."""
 
     text: str
     autor: str
     quelle: str
 
 
-def lade_zitate(sprache: str = "de") -> tuple[Zitat, ...]:
+def load_quotes(sprache: str = "de") -> tuple[Quote, ...]:
     """Laedt den Zitatpool aus den Paketdaten.
 
     Args:
@@ -76,12 +76,12 @@ def lade_zitate(sprache: str = "de") -> tuple[Zitat, ...]:
         logger.exception("Zitatpool konnte nicht geladen werden")
         return ()
     return tuple(
-        Zitat(text=eintrag[feld], autor=eintrag["autor"], quelle=eintrag["quelle"]) for eintrag in eintraege
+        Quote(text=eintrag[feld], autor=eintrag["autor"], quelle=eintrag["quelle"]) for eintrag in eintraege
     )
 
 
 class AboutDialog(QDialog):
-    """Zeigt Version, Lizenz, ein Zitat und die Verweise."""
+    """Zeigt Version, Lizenz, ein Quote und die Verweise."""
 
     def __init__(
         self,
@@ -96,7 +96,7 @@ class AboutDialog(QDialog):
         repo_url: str = "",
         homepage_url: str | None = HOMEPAGE_URL,
         sprache: str = "de",
-        zitat: Zitat | None = None,
+        zitat: Quote | None = None,
     ) -> None:
         """Baut den Dialog.
 
@@ -122,7 +122,7 @@ class AboutDialog(QDialog):
             sprache:
                 'de' oder 'en' - waehlt die Sprache des Zitats.
             zitat:
-                Ein festes Zitat statt eines zufaelligen. Fuer Bildschirmfotos,
+                Ein festes Quote statt eines zufaelligen. Fuer Bildschirmfotos,
                 die sonst bei jedem Lauf anders aussehen.
         """
         super().__init__(parent)
@@ -169,7 +169,7 @@ class AboutDialog(QDialog):
 
         Ein QLabel mit Wortumbruch meldet als Wunschgroesse eine Zeile. Das
         Layout fragt heightForWidth erst, wenn die Breite feststeht - und die
-        steht erst hier fest. Ohne diesen Nachschlag bekam das laengste Zitat
+        steht erst hier fest. Ohne diesen Nachschlag bekam das laengste Quote
         des Pools 43 statt der noetigen 73 Bildpunkte und war unten
         abgeschnitten (gemessen). setSizePolicy(heightForWidth) allein aendert
         daran nichts.
@@ -218,8 +218,8 @@ class AboutDialog(QDialog):
         auslage.addLayout(zeile)
         return zone
 
-    def _zitat_anhaengen(self, auslage: QVBoxLayout, zitat: Zitat | None) -> None:
-        """Haengt Zitat und Urheber an. Ohne Pool bleibt der Abschnitt weg."""
+    def _zitat_anhaengen(self, auslage: QVBoxLayout, zitat: Quote | None) -> None:
+        """Haengt Quote und Urheber an. Ohne Pool bleibt der Abschnitt weg."""
         if zitat is None:
             return
         # Der Pool traegt keine Umbrueche - Daten ohne Layout. Die Beschriftung
@@ -249,7 +249,7 @@ class AboutDialog(QDialog):
         zeile.addStretch(1)
         return zeile
 
-    def _ziehe_zitat(self) -> Zitat | None:
-        """Waehlt ein Zitat. secrets statt random, weil ruff Letzteres ruegt."""
-        pool = lade_zitate(self._sprache)
+    def _ziehe_zitat(self) -> Quote | None:
+        """Waehlt ein Quote. secrets statt random, weil ruff Letzteres ruegt."""
+        pool = load_quotes(self._sprache)
         return pool[secrets.randbelow(len(pool))] if pool else None

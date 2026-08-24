@@ -9,7 +9,7 @@ den Anwender entscheiden, ob er weiterarbeitet oder beendet. In fremden
 Umgebungen ist das der Unterschied zwischen einer brauchbaren Meldung und
 "war auf einmal weg".
 
-Dazu `abbruch_abfangen`: Strg+C nimmt sonst den Umweg ueber eine Ausnahme
+Dazu `install_interrupt_handler`: Strg+C nimmt sonst den Umweg ueber eine Ausnahme
 und trifft dabei zufaelligen Code - oder wirkt gar nicht.
 
 Uebernommen aus jira-timesheet-qt 0.7.2.
@@ -36,10 +36,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .texte import pruefe_sprache, text
+from .texts import pruefe_sprache, text
 
 
-class FehlerDialog(QDialog):
+class ErrorDialog(QDialog):
     """Zeigt einen Fehlerbericht mit den Knoepfen Kopieren, Weiter und Beenden."""
 
     def __init__(self, bericht: str, parent: QWidget | None = None, *, sprache: str = "de") -> None:
@@ -102,7 +102,7 @@ class FehlerDialog(QDialog):
             anwendung.quit()
 
 
-def baue_bericht(
+def build_report(
     art: type[BaseException],
     wert: BaseException,
     spur: TracebackType | None,
@@ -134,7 +134,7 @@ def baue_bericht(
     return "".join(zeile if zeile.endswith("\n") else f"{zeile}\n" for zeile in zeilen)
 
 
-def einhaengen(
+def install_error_handler(
     parent: QWidget | None = None,
     *,
     kopfzeile: str = "",
@@ -184,7 +184,7 @@ def einhaengen(
             return
         laeuft["wert"] = True
         try:
-            bericht = baue_bericht(art, wert, spur, kopfzeile)
+            bericht = build_report(art, wert, spur, kopfzeile)
             # Immer auch auf die Fehlerausgabe, damit nichts verloren geht,
             # falls der Dialog nicht erscheinen kann.
             sys.stderr.write(bericht)
@@ -193,7 +193,7 @@ def einhaengen(
                     mitschreiben(bericht)
                 except Exception:  # noqa: BLE001 - eine kaputte Ablage darf nichts verhindern
                     sys.stderr.write("Der Bericht konnte nicht gespeichert werden.\n")
-            dialog = FehlerDialog(bericht, parent, sprache=sprache)
+            dialog = ErrorDialog(bericht, parent, sprache=sprache)
             dialog.setWindowModality(Qt.WindowModality.ApplicationModal)
             dialog.exec()
         except Exception:  # noqa: BLE001 - der Haken darf nie selbst sprengen
@@ -204,7 +204,7 @@ def einhaengen(
     sys.excepthook = behandeln
 
 
-def abbruch_abfangen(
+def install_interrupt_handler(
     anwendung: QCoreApplication,
     *,
     takt_ms: int = 200,

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Sprechender Name -> Glyph. Anwendungen sprechen die Sinnbilder unter diesen
 # Namen an, nicht ueber die mdi6-Kennung - so laesst sich ein Glyph an EINER
 # Stelle austauschen. Namen aus jira-timesheet-qt uebernommen.
-GLYPHEN: dict[str, str] = {
+GLYPHS: dict[str, str] = {
     "pruefen": "mdi6.play",
     "abbrechen": "mdi6.stop",
     "site_neu": "mdi6.plus",
@@ -36,9 +36,9 @@ GLYPHEN: dict[str, str] = {
 }
 
 
-def lade_icon(name: str, farbe: str) -> QIcon:
+def load_icon(name: str, farbe: str) -> QIcon:
     """Liefert das Sinnbild in der gewuenschten Farbe."""
-    glyph = GLYPHEN.get(name)
+    glyph = GLYPHS.get(name)
     if glyph is None:
         logger.warning("Unbekanntes Sinnbild: %s", name)
         return QIcon()

@@ -21,11 +21,11 @@ from enum import StrEnum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QGuiApplication, QPalette
 
-from .texte import text as _text
+from .texts import text as _text
 
 
 @dataclass(frozen=True)
-class Farben:
+class Colors:
     """Feldnamen wie die Palette in jira-timesheet-qt."""
 
     bg_primary: str
@@ -49,7 +49,7 @@ class Farben:
 # Werte woertlich aus jira-timesheet-qt. Reihenfolge der Flaechen nach
 # Helligkeit: bg_primary (Fenster) - bg_secondary (Panels) - bg_tertiary
 # (Tabelle) - bg_elevated (Schaltflaechen).
-DUNKEL = Farben(
+DARK = Colors(
     bg_primary="#1f2226",
     bg_secondary="#23262b",
     bg_tertiary="#26292e",
@@ -68,7 +68,7 @@ DUNKEL = Farben(
     purple="#8f83b0",
 )
 
-HELL = Farben(
+LIGHT = Colors(
     bg_primary="#f4f5f7",
     bg_secondary="#f0f1f4",
     bg_tertiary="#ffffff",
@@ -96,7 +96,7 @@ RADIUS_MD = 6
 TOOLBAR_ICON_SIZE = 24
 
 
-class Modus(StrEnum):
+class Mode(StrEnum):
     """Erscheinungsbild. Die Werte landen in den Einstellungsdateien.
 
     Sie stimmen mit denen in jira-timesheet-qt ueberein - eine vorhandene
@@ -104,12 +104,12 @@ class Modus(StrEnum):
     """
 
     SYSTEM = "system"
-    DUNKEL = "dark"
-    HELL = "light"
+    DARK = "dark"
+    LIGHT = "light"
 
 
 @dataclass(frozen=True)
-class Akzent:
+class Accent:
     """Ein Satz Akzentfarben: Grundton, Hover, durchscheinende Flaeche."""
 
     accent: str
@@ -121,77 +121,77 @@ class Akzent:
 # Grund traegt, auf hellem zu blass wird - und umgekehrt. Die Schluessel
 # stehen in Einstellungsdateien und bleiben deshalb unveraendert, der
 # Anzeigename kommt aus texte.py.
-AKZENTE: dict[str, tuple[Akzent, Akzent]] = {
+ACCENTS: dict[str, tuple[Accent, Accent]] = {
     "orange": (
-        Akzent("#ff922b", "#ffa94d", "rgba(255, 146, 43, 0.20)"),
-        Akzent("#e8590c", "#fd7e14", "rgba(232, 89, 12, 0.14)"),
+        Accent("#ff922b", "#ffa94d", "rgba(255, 146, 43, 0.20)"),
+        Accent("#e8590c", "#fd7e14", "rgba(232, 89, 12, 0.14)"),
     ),
     "blau": (
-        Akzent("#4dabf7", "#74c0fc", "rgba(77, 171, 247, 0.20)"),
-        Akzent("#1c7ed6", "#1971c2", "rgba(28, 126, 214, 0.14)"),
+        Accent("#4dabf7", "#74c0fc", "rgba(77, 171, 247, 0.20)"),
+        Accent("#1c7ed6", "#1971c2", "rgba(28, 126, 214, 0.14)"),
     ),
     "gruen": (
-        Akzent("#51cf66", "#69db7c", "rgba(81, 207, 102, 0.20)"),
-        Akzent("#2f9e44", "#37b24d", "rgba(47, 158, 68, 0.14)"),
+        Accent("#51cf66", "#69db7c", "rgba(81, 207, 102, 0.20)"),
+        Accent("#2f9e44", "#37b24d", "rgba(47, 158, 68, 0.14)"),
     ),
     "tuerkis": (
-        Akzent("#22b8cf", "#3bc9db", "rgba(34, 184, 207, 0.20)"),
-        Akzent("#0c8599", "#1098ad", "rgba(12, 133, 153, 0.14)"),
+        Accent("#22b8cf", "#3bc9db", "rgba(34, 184, 207, 0.20)"),
+        Accent("#0c8599", "#1098ad", "rgba(12, 133, 153, 0.14)"),
     ),
     "violett": (
-        Akzent("#b197fc", "#d0bfff", "rgba(177, 151, 252, 0.20)"),
-        Akzent("#7048e8", "#7950f2", "rgba(112, 72, 232, 0.14)"),
+        Accent("#b197fc", "#d0bfff", "rgba(177, 151, 252, 0.20)"),
+        Accent("#7048e8", "#7950f2", "rgba(112, 72, 232, 0.14)"),
     ),
 }
 
-STANDARD_AKZENT = "orange"
+DEFAULT_ACCENT = "orange"
 
 # Zoomstufen der Oberflaeche in Prozent.
-ZOOMSTUFEN: tuple[int, ...] = (80, 90, 100, 110, 125, 150, 175, 200)
-STANDARD_ZOOM = 100
+ZOOM_LEVELS: tuple[int, ...] = (80, 90, 100, 110, 125, 150, 175, 200)
+DEFAULT_ZOOM = 100
 
-# Erscheinungsbild, Akzent und Zoom gelten fuer die ganze Anwendung - genau wie
+# Erscheinungsbild, Akzentfarbe und Zoom gelten fuer die ganze Anwendung - genau wie
 # das Stylesheet, an dem sie haengen. Deshalb Modulzustand und kein Wert, der
 # durch jeden Aufruf gereicht werden muesste.
-_modus: Modus = Modus.SYSTEM
-_akzent: str = STANDARD_AKZENT
-_zoom: int = STANDARD_ZOOM
+_modus: Mode = Mode.SYSTEM
+_akzent: str = DEFAULT_ACCENT
+_zoom: int = DEFAULT_ZOOM
 
 
-def setze_modus(wert: Modus | str) -> None:
+def set_mode(wert: Mode | str) -> None:
     """Setzt das Erscheinungsbild. Unbekannte Angaben ergeben SYSTEM."""
     global _modus
     try:
-        _modus = Modus(wert)
+        _modus = Mode(wert)
     except ValueError:
-        _modus = Modus.SYSTEM
+        _modus = Mode.SYSTEM
 
 
-def modus() -> Modus:
+def mode() -> Mode:
     """Das eingestellte Erscheinungsbild - SYSTEM, wenn es dem System folgt."""
     return _modus
 
 
-def setze_akzent(name: str) -> None:
+def set_accent(name: str) -> None:
     """Setzt die Akzentfarbe. Unbekannte Namen ergeben den Standard."""
     global _akzent
-    _akzent = name if name in AKZENTE else STANDARD_AKZENT
+    _akzent = name if name in ACCENTS else DEFAULT_ACCENT
 
 
-def akzent() -> str:
+def accent() -> str:
     """Name der aktiven Akzentfarbe."""
     return _akzent
 
 
-def akzent_namen(sprache: str = "de") -> dict[str, str]:
+def accent_names(sprache: str = "de") -> dict[str, str]:
     """Die waehlbaren Akzentfarben als Schluessel und Anzeigename."""
-    return {name: _text(f"akzent.{name}", sprache) for name in AKZENTE}
+    return {name: _text(f"accent.{name}", sprache) for name in ACCENTS}
 
 
-def setze_zoom(prozent: int) -> None:
+def set_zoom(prozent: int) -> None:
     """Setzt den Zoom der Oberflaeche, begrenzt auf die vorhandenen Stufen."""
     global _zoom
-    _zoom = min(ZOOMSTUFEN[-1], max(ZOOMSTUFEN[0], int(prozent)))
+    _zoom = min(ZOOM_LEVELS[-1], max(ZOOM_LEVELS[0], int(prozent)))
 
 
 def zoom() -> int:
@@ -199,26 +199,26 @@ def zoom() -> int:
     return _zoom
 
 
-def naechster_zoom(richtung: int) -> int:
+def next_zoom(richtung: int) -> int:
     """Die naechste Zoomstufe hoch (1) oder runter (-1), ohne die Enden zu verlassen."""
     try:
-        i = ZOOMSTUFEN.index(_zoom)
+        i = ZOOM_LEVELS.index(_zoom)
     except ValueError:
-        i = ZOOMSTUFEN.index(STANDARD_ZOOM)
-    return ZOOMSTUFEN[max(0, min(len(ZOOMSTUFEN) - 1, i + richtung))]
+        i = ZOOM_LEVELS.index(DEFAULT_ZOOM)
+    return ZOOM_LEVELS[max(0, min(len(ZOOM_LEVELS) - 1, i + richtung))]
 
 
-def umgeschaltet() -> Modus:
+def toggled() -> Mode:
     """Das jeweils andere Erscheinungsbild - fuer den Umschalter der Werkzeugleiste.
 
     Aus SYSTEM wird das Gegenteil dessen, was gerade zu sehen ist. Sonst waere
     der erste Druck auf den Umschalter wirkungslos, wenn das System ohnehin
     schon dunkel ist.
     """
-    return Modus.HELL if ist_dunkel() else Modus.DUNKEL
+    return Mode.LIGHT if is_dark() else Mode.DARK
 
 
-def system_ist_dunkel() -> bool:
+def system_is_dark() -> bool:
     """Fragt das Farbschema des Systems ab (Qt 6.5 und neuer)."""
     try:
         return QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
@@ -226,21 +226,21 @@ def system_ist_dunkel() -> bool:
         return True
 
 
-def ist_dunkel() -> bool:
+def is_dark() -> bool:
     """Ob gerade dunkel dargestellt wird.
 
     Folgt dem eingestellten Erscheinungsbild. Nur bei SYSTEM wird das
     Betriebssystem gefragt - vorher tat das diese Funktion immer, und deshalb
-    liess sich nichts umschalten.
+    liess sich nichts toggle.
     """
-    if _modus is Modus.DUNKEL:
+    if _modus is Mode.DARK:
         return True
-    if _modus is Modus.HELL:
+    if _modus is Mode.LIGHT:
         return False
-    return system_ist_dunkel()
+    return system_is_dark()
 
 
-def farben(dunkel: bool | None = None) -> Farben:
+def colors(dunkel: bool | None = None) -> Colors:
     """Die Farbwerte des aktuellen Erscheinungsbilds, mit der aktiven Akzentfarbe.
 
     Args:
@@ -249,12 +249,12 @@ def farben(dunkel: bool | None = None) -> Farben:
             Erscheinungsbild.
 
     Returns:
-        Die Farben. Die drei Akzentwerte stammen aus der gewaehlten
+        Die Colors. Die drei Akzentwerte stammen aus der gewaehlten
         Akzentfarbe, alles uebrige aus der Grundpalette.
     """
-    ist_dunkles_bild = ist_dunkel() if dunkel is None else dunkel
-    grund = DUNKEL if ist_dunkles_bild else HELL
-    ton = AKZENTE.get(_akzent, AKZENTE[STANDARD_AKZENT])[0 if ist_dunkles_bild else 1]
+    ist_dunkles_bild = is_dark() if dunkel is None else dunkel
+    grund = DARK if ist_dunkles_bild else LIGHT
+    ton = ACCENTS.get(_akzent, ACCENTS[DEFAULT_ACCENT])[0 if ist_dunkles_bild else 1]
     return replace(
         grund,
         accent=ton.accent,
@@ -263,7 +263,7 @@ def farben(dunkel: bool | None = None) -> Farben:
     )
 
 
-def baue_palette(p: Farben) -> QPalette:
+def build_palette(p: Colors) -> QPalette:
     """Faerbt die nativen Bedienelemente.
 
     Fusion zeichnet Pfeile, Rahmen, Bildlaufleisten und den Kalender selbst -
@@ -291,7 +291,7 @@ def baue_palette(p: Farben) -> QPalette:
     return qp
 
 
-def skaliere(qss: str) -> str:
+def scale(qss: str) -> str:
     """Rechnet den aktiven Zoom in alle Schriftgroessen eines Stylesheets ein.
 
     Oeffentlich, weil eine Anwendung ihre eigenen Regeln an das Stylesheet der
@@ -303,7 +303,7 @@ def skaliere(qss: str) -> str:
     zu tun: sie leiten ihre Schrift vom Widget-Font ab, und der kommt aus der
     globalen Regel, die hier mitskaliert wird.
     """
-    if _zoom == STANDARD_ZOOM:
+    if _zoom == DEFAULT_ZOOM:
         return qss
     faktor = _zoom / 100.0
     return re.sub(
@@ -313,14 +313,14 @@ def skaliere(qss: str) -> str:
     )
 
 
-def baue_qss(p: Farben) -> str:
+def build_stylesheet(p: Colors) -> str:
     """Struktur und Schrift.
 
     Die Bloecke fuer Werkzeugleiste und Reiter sind woertlich aus
-    jira-timesheet-qt uebernommen - Abstaende, Schriftstaerken und Farben
+    jira-timesheet-qt uebernommen - Abstaende, Schriftstaerken und Farbwerte
     inbegriffen. Wer hier etwas aendert, bricht die Wiedererkennung.
     """
-    return skaliere(f"""
+    return scale(f"""
     QWidget {{ font-size: 13px; }}
     /* Die globale Flaechenregel wuerde sonst jedem Beschriftungsfeld einen
        eigenen Kasten geben. */
@@ -428,11 +428,11 @@ def baue_qss(p: Farben) -> str:
     """)
 
 
-def umschalten(app: QGuiApplication) -> Modus:
+def toggle(app: QGuiApplication) -> Mode:
     """Wechselt zwischen hell und dunkel und wendet den Wechsel an.
 
     Fuer den Umschalter in der Werkzeugleiste. Die Anwendung muss danach nur
-    noch zweierlei tun: den neuen Modus speichern und ihre selbstgezeichneten
+    noch zweierlei tun: den neuen Mode speichern und ihre selbstgezeichneten
     Flaechen neu einfaerben.
 
     Args:
@@ -440,25 +440,25 @@ def umschalten(app: QGuiApplication) -> Modus:
             Die laufende Anwendung.
 
     Returns:
-        Der neue Modus - zum Speichern.
+        Der neue Mode - zum Speichern.
     """
-    setze_modus(umgeschaltet())
-    anwenden(app)
+    set_mode(toggled())
+    apply_theme(app)
     return _modus
 
 
-def anwenden(app: QGuiApplication, dunkel: bool | None = None) -> Farben:
-    """Setzt Stil, Palette und Stylesheet. Gibt die verwendeten Farben zurueck.
+def apply_theme(app: QGuiApplication, dunkel: bool | None = None) -> Colors:
+    """Setzt Stil, Palette und Stylesheet. Gibt die verwendeten Colors zurueck.
 
     Erneut aufrufen, wenn sich Erscheinungsbild, Akzentfarbe oder Zoom geaendert
     haben - Palette und Stylesheet haengen an der Anwendung, nicht am Fenster,
     und werden dabei vollstaendig neu gebaut:
 
-        setze_modus(Modus.DUNKEL)
-        anwenden(app)
+        set_mode(Mode.DARK)
+        apply_theme(app)
 
     Was eine Anwendung selbst zeichnet (Kalender, Diagramme), erfaehrt davon
-    nichts. Sie muss ihre Flaechen danach selbst neu einfaerben - die Farben
+    nichts. Sie muss ihre Flaechen danach selbst neu einfaerben - die Farbwerte
     dafuer liefert der Rueckgabewert.
 
     Args:
@@ -469,14 +469,14 @@ def anwenden(app: QGuiApplication, dunkel: bool | None = None) -> Farben:
             zu aendern. Ohne Angabe gilt die Einstellung.
 
     Returns:
-        Die verwendeten Farben.
+        Die verwendeten Colors.
     """
-    p = farben(dunkel)
+    p = colors(dunkel)
     setze_stil = getattr(app, "setStyle", None)
     if callable(setze_stil):
         setze_stil("Fusion")
-    app.setPalette(baue_palette(p))
+    app.setPalette(build_palette(p))
     setze_qss = getattr(app, "setStyleSheet", None)
     if callable(setze_qss):
-        setze_qss(baue_qss(p))
+        setze_qss(build_stylesheet(p))
     return p

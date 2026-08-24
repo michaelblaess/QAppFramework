@@ -24,20 +24,20 @@ pytest.importorskip("PySide6", reason="Der Fehlerdialog gehoert zur Desktop-Ober
 from PySide6.QtCore import QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QPushButton  # noqa: E402
 
-from QAppFramework.absturz import (  # noqa: E402
-    FehlerDialog,
-    abbruch_abfangen,
-    baue_bericht,
-    einhaengen,
+from QAppFramework.crash import (  # noqa: E402
+    ErrorDialog,
+    build_report,
+    install_error_handler,
+    install_interrupt_handler,
 )
-from QAppFramework.theme import anwenden  # noqa: E402
+from QAppFramework.theme import apply_theme  # noqa: E402
 
 
 @pytest.fixture(scope="module")
 def app() -> QApplication:
     vorhanden = QApplication.instance()
     fertig = vorhanden if isinstance(vorhanden, QApplication) else QApplication([])
-    anwenden(fertig, dunkel=False)
+    apply_theme(fertig, dunkel=False)
     return fertig
 
 
@@ -61,7 +61,7 @@ def _ausnahme() -> tuple[type[BaseException], BaseException, object]:
 class TestBericht:
     def test_der_bericht_nennt_die_ursache(self) -> None:
         art, wert, spur = _ausnahme()
-        bericht = baue_bericht(art, wert, spur)  # type: ignore[arg-type]
+        bericht = build_report(art, wert, spur)  # type: ignore[arg-type]
         assert "ValueError" in bericht
         assert "etwas ist schiefgelaufen" in bericht
         assert "_ausnahme" in bericht, "Der Aufrufstapel fehlt"
@@ -69,26 +69,26 @@ class TestBericht:
     def test_die_kopfzeile_steht_ganz_oben(self) -> None:
         """Ohne Name und Version ist ein weitergegebener Bericht wenig wert."""
         art, wert, spur = _ausnahme()
-        bericht = baue_bericht(art, wert, spur, "Beispiel 1.2.3")  # type: ignore[arg-type]
+        bericht = build_report(art, wert, spur, "Beispiel 1.2.3")  # type: ignore[arg-type]
         assert bericht.splitlines()[0] == "Beispiel 1.2.3"
 
     def test_die_umgebung_steht_dabei(self) -> None:
         art, wert, spur = _ausnahme()
-        bericht = baue_bericht(art, wert, spur)  # type: ignore[arg-type]
+        bericht = build_report(art, wert, spur)  # type: ignore[arg-type]
         assert sys.version.split()[0] in bericht
         assert sys.platform in bericht
 
     def test_jede_zeile_endet_mit_einem_umbruch(self) -> None:
         """Sonst kleben Kopfzeile und Aufrufstapel aneinander."""
         art, wert, spur = _ausnahme()
-        bericht = baue_bericht(art, wert, spur, "Beispiel 1.2.3")  # type: ignore[arg-type]
+        bericht = build_report(art, wert, spur, "Beispiel 1.2.3")  # type: ignore[arg-type]
         assert bericht.endswith("\n")
         assert "\n\n" in bericht, "Zwischen Umgebung und Aufrufstapel fehlt die Leerzeile"
 
 
 class TestDialog:
     def test_der_bericht_steht_lesbar_im_dialog(self, app: QApplication) -> None:
-        dialog = FehlerDialog("Zeile eins\nZeile zwei")
+        dialog = ErrorDialog("Zeile eins\nZeile zwei")
         ansicht = dialog.findChild(QPlainTextEdit, "LogView")
         assert ansicht is not None
         assert ansicht.toPlainText() == "Zeile eins\nZeile zwei"
@@ -96,7 +96,7 @@ class TestDialog:
         dialog.close()
 
     def test_alle_drei_knoepfe_sind_da(self, app: QApplication) -> None:
-        dialog = FehlerDialog("x")
+        dialog = ErrorDialog("x")
         namen = {k.objectName() for k in dialog.findChildren(QPushButton)}
         assert namen == {"absturz-kopieren", "absturz-beenden", "absturz-weiter"}
         dialog.close()
@@ -104,7 +104,7 @@ class TestDialog:
     def test_kopieren_legt_den_bericht_in_die_zwischenablage(self, app: QApplication) -> None:
         from PySide6.QtGui import QGuiApplication
 
-        dialog = FehlerDialog("der ganze Bericht")
+        dialog = ErrorDialog("der ganze Bericht")
         knopf = dialog.findChild(QPushButton, "absturz-kopieren")
         assert knopf is not None
         knopf.click()
@@ -114,7 +114,7 @@ class TestDialog:
         dialog.close()
 
     def test_englisch_uebersetzt_die_knoepfe(self, app: QApplication) -> None:
-        dialog = FehlerDialog("x", sprache="en")
+        dialog = ErrorDialog("x", sprache="en")
         beschriftungen = {k.text() for k in dialog.findChildren(QPushButton)}
         assert beschriftungen == {"Copy report", "Quit", "Carry on"}
         dialog.close()
@@ -123,7 +123,7 @@ class TestDialog:
 class TestEinhaengen:
     def test_der_haken_haengt_danach_in_excepthook(self) -> None:
         vorher = sys.excepthook
-        einhaengen()
+        install_error_handler()
         assert sys.excepthook is not vorher
 
     def test_ein_abbruch_von_aussen_gilt_nicht_als_absturz(
@@ -134,7 +134,7 @@ class TestEinhaengen:
         unschuldigen Code.
         """
         gesehen: list[str] = []
-        einhaengen(mitschreiben=gesehen.append)
+        install_error_handler(mitschreiben=gesehen.append)
         sys.excepthook(KeyboardInterrupt, KeyboardInterrupt(), None)
         assert gesehen == [], "Ein Abbruch von aussen darf keinen Bericht erzeugen"
         assert "KeyboardInterrupt" in capsys.readouterr().err
@@ -143,8 +143,8 @@ class TestEinhaengen:
         """Ohne Ablage ueberlebt der Bericht das Schliessen des Dialogs nicht."""
         gesehen: list[str] = []
         # Der Dialog wuerde blockieren - hier geht es nur um den Weg davor.
-        monkeypatch.setattr(FehlerDialog, "exec", lambda self: 0)
-        einhaengen(kopfzeile="Beispiel 1.2.3", mitschreiben=gesehen.append)
+        monkeypatch.setattr(ErrorDialog, "exec", lambda self: 0)
+        install_error_handler(kopfzeile="Beispiel 1.2.3", mitschreiben=gesehen.append)
         art, wert, spur = _ausnahme()
         sys.excepthook(art, wert, spur)  # type: ignore[arg-type]
         assert len(gesehen) == 1
@@ -159,8 +159,8 @@ class TestEinhaengen:
         def kaputt(_bericht: str) -> None:
             raise OSError("Platte voll")
 
-        monkeypatch.setattr(FehlerDialog, "exec", lambda self: 0)
-        einhaengen(mitschreiben=kaputt)
+        monkeypatch.setattr(ErrorDialog, "exec", lambda self: 0)
+        install_error_handler(mitschreiben=kaputt)
         art, wert, spur = _ausnahme()
         sys.excepthook(art, wert, spur)  # type: ignore[arg-type]
         fehlerausgabe = capsys.readouterr().err
@@ -180,11 +180,11 @@ class TestAbbruchAbfangen:
     def test_strg_c_beendet_die_schleife_zuegig(self, app: QApplication) -> None:
         """Der Kern der Sache, und er kann scheitern.
 
-        Ohne den Wecker in `abbruch_abfangen` kommt der Behandler nie an die
+        Ohne den Wecker in `install_interrupt_handler` kommt der Behandler nie an die
         Reihe, solange Qt in seiner eigenen Schleife wartet - dann greift erst
         die Notbremse und die gemessene Zeit reisst die Schranke.
         """
-        wecker = abbruch_abfangen(app, takt_ms=50)
+        wecker = install_interrupt_handler(app, takt_ms=50)
         notbremse = QTimer()
         notbremse.setSingleShot(True)
         notbremse.timeout.connect(app.quit)
@@ -203,7 +203,7 @@ class TestAbbruchAbfangen:
 
     def test_der_behandler_haengt_am_signal(self, app: QApplication) -> None:
         """Ohne eigenen Behandler wuerde SIGINT zu einem KeyboardInterrupt."""
-        wecker = abbruch_abfangen(app)
+        wecker = install_interrupt_handler(app)
         try:
             assert signal.getsignal(signal.SIGINT) is not signal.default_int_handler
         finally:
@@ -211,7 +211,7 @@ class TestAbbruchAbfangen:
 
     def test_der_wecker_haengt_an_der_anwendung(self, app: QApplication) -> None:
         """Sonst raeumt Python ihn ab und der Behandler kommt nie an die Reihe."""
-        wecker = abbruch_abfangen(app)
+        wecker = install_interrupt_handler(app)
         try:
             assert wecker.parent() is app
             assert wecker.isActive()
@@ -222,7 +222,7 @@ class TestAbbruchAbfangen:
         self, app: QApplication, capsys: pytest.CaptureFixture[str]
     ) -> None:
         """Wer in der Konsole Strg+C drueckt, soll eine Bestaetigung sehen."""
-        wecker = abbruch_abfangen(app)
+        wecker = install_interrupt_handler(app)
         try:
             behandler = signal.getsignal(signal.SIGINT)
             assert callable(behandler)

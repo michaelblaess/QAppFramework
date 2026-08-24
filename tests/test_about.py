@@ -2,7 +2,7 @@
 
 Geprueft wird, was der Anwender sieht - und was er NICHT sehen darf: einen
 abgeschnittenen Text. Der Dialog hat feste Breite, also entscheidet der Umbruch
-ueber die Hoehe, und die haengt am laengsten Zitat des Pools.
+ueber die Hoehe, und die haengt am laengsten Quote des Pools.
 """
 
 from __future__ import annotations
@@ -18,17 +18,17 @@ pytest.importorskip("PySide6", reason="Der Info-Dialog gehoert zur Desktop-Oberf
 
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton  # noqa: E402
 
-from QAppFramework.about import BREITE, AboutDialog, Zitat, lade_zitate  # noqa: E402
-from QAppFramework.theme import anwenden  # noqa: E402
+from QAppFramework.about import BREITE, AboutDialog, Quote, load_quotes  # noqa: E402
+from QAppFramework.theme import apply_theme  # noqa: E402
 
-PROBE = Zitat(text="Ein kurzer Satz.", autor="Niemand", quelle="erfunden")
+PROBE = Quote(text="Ein kurzer Satz.", autor="Niemand", quelle="erfunden")
 
 
 @pytest.fixture(scope="module")
 def app() -> QApplication:
     vorhanden = QApplication.instance()
     fertig = vorhanden if isinstance(vorhanden, QApplication) else QApplication([])
-    anwenden(fertig, dunkel=False)
+    apply_theme(fertig, dunkel=False)
     return fertig
 
 
@@ -60,11 +60,11 @@ def beschriftung(dialog: AboutDialog, name: str) -> QLabel:
 
 class TestZitatpool:
     def test_beide_sprachen_sind_vollstaendig(self) -> None:
-        assert len(lade_zitate("de")) == len(lade_zitate("en")) > 0
+        assert len(load_quotes("de")) == len(load_quotes("en")) > 0
 
     def test_jedes_zitat_nennt_seine_quelle(self) -> None:
         """Ohne Quelle laesst sich die Gemeinfreiheit nicht belegen."""
-        for zitat in lade_zitate("de"):
+        for zitat in load_quotes("de"):
             assert zitat.text.strip()
             assert zitat.autor.strip()
             assert zitat.quelle.strip()
@@ -72,10 +72,10 @@ class TestZitatpool:
     def test_die_texte_tragen_keine_umbrueche(self) -> None:
         """Daten ohne Layout - die Beschriftung bricht selbst um."""
         for sprache in ("de", "en"):
-            assert all("\n" not in zitat.text for zitat in lade_zitate(sprache))
+            assert all("\n" not in zitat.text for zitat in load_quotes(sprache))
 
     def test_eine_unbekannte_sprache_ergibt_deutsch(self) -> None:
-        assert lade_zitate("kl") == lade_zitate("de")
+        assert load_quotes("kl") == load_quotes("de")
 
     def test_kein_geschuetzter_autor_im_pool(self) -> None:
         """Nur gemeinfreie Autoren - der Schutz endet 70 Jahre nach dem Tod (Paragraf 64 UrhG).
@@ -97,7 +97,7 @@ class TestZitatpool:
             "martin fowler",
         )
         for sprache in ("de", "en"):
-            for zitat in lade_zitate(sprache):
+            for zitat in load_quotes(sprache):
                 name = zitat.autor.casefold()
                 for verboten in gesperrt:
                     assert verboten not in name, f"{zitat.autor} ist nicht gemeinfrei ({sprache})"
@@ -160,22 +160,22 @@ class TestAboutDialog:
     def test_das_laengste_zitat_wird_nicht_abgeschnitten(self, app: QApplication) -> None:
         """Der Dialog hat feste Breite - die Hoehe muss dem Umbruch folgen.
 
-        Geprueft am laengsten Zitat des Pools, nicht an einem gedachten: nur
+        Geprueft am laengsten Quote des Pools, nicht an einem gedachten: nur
         das steht wirklich irgendwann im Fenster.
         """
-        laengstes = max(lade_zitate("de"), key=lambda z: len(z.text))
+        laengstes = max(load_quotes("de"), key=lambda z: len(z.text))
         dialog = _dialog(app, zitat=laengstes)
         spruch = dialog.findChild(QLabel, "AboutQuote")
         assert spruch is not None
         assert spruch.height() >= spruch.heightForWidth(spruch.width()), (
-            f"Das laengste Zitat ({len(laengstes.text)} Zeichen) passt nicht in die Hoehe"
+            f"Das laengste Quote ({len(laengstes.text)} Zeichen) passt nicht in die Hoehe"
         )
         dialog.close()
 
     def test_die_breite_steht_fest(self, app: QApplication) -> None:
         """Ein Dialog, der mit der Laenge des gezogenen Zitats springt, wirkt unruhig."""
         kurz = _dialog(app, zitat=PROBE)
-        lang = _dialog(app, zitat=max(lade_zitate("de"), key=lambda z: len(z.text)))
+        lang = _dialog(app, zitat=max(load_quotes("de"), key=lambda z: len(z.text)))
         assert kurz.width() == lang.width() == BREITE
         kurz.close()
         lang.close()

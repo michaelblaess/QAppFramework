@@ -11,17 +11,17 @@ einer Datei, die mitgeliefert und gefunden werden muesste.
 
 from __future__ import annotations
 
-SPRACHEN = ("de", "en")
+LANGUAGES = ("de", "en")
 STANDARDSPRACHE = "de"
 
 # Schluessel -> Sprache -> Text. Flach gehalten: eine Ebene reicht, und ein
 # fehlender Schluessel faellt beim Nachschlagen sofort auf.
 TEXTE: dict[str, dict[str, str]] = {
-    "akzent.orange": {"de": "Orange", "en": "Orange"},
-    "akzent.blau": {"de": "Blau", "en": "Blue"},
-    "akzent.gruen": {"de": "Grün", "en": "Green"},
-    "akzent.tuerkis": {"de": "Türkis", "en": "Turquoise"},
-    "akzent.violett": {"de": "Violett", "en": "Violet"},
+    "accent.orange": {"de": "Orange", "en": "Orange"},
+    "accent.blau": {"de": "Blau", "en": "Blue"},
+    "accent.gruen": {"de": "Grün", "en": "Green"},
+    "accent.tuerkis": {"de": "Türkis", "en": "Turquoise"},
+    "accent.violett": {"de": "Violett", "en": "Violet"},
     "about.titel": {"de": "Über", "en": "About"},
     "common.schliessen": {"de": "Schließen", "en": "Close"},
     "absturz.titel": {"de": "Ein Fehler ist aufgetreten", "en": "Something went wrong"},
@@ -39,7 +39,7 @@ TEXTE: dict[str, dict[str, str]] = {
     "absturz.beenden": {"de": "Beenden", "en": "Quit"},
     "absturz.weiter": {"de": "Weiterarbeiten", "en": "Carry on"},
     "einstellungen.titel": {"de": "Einstellungen", "en": "Settings"},
-    "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
+    "einstellungen.darstellung": {"de": "Appearance", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},
     "einstellungen.akzentfarbe": {"de": "Akzentfarbe", "en": "Accent colour"},
     "einstellungen.zoom": {"de": "Zoom", "en": "Zoom"},
@@ -55,15 +55,15 @@ TEXTE: dict[str, dict[str, str]] = {
     },
     "einstellungen.speichern": {"de": "Speichern", "en": "Save"},
     "einstellungen.abbrechen": {"de": "Abbrechen", "en": "Cancel"},
-    "modus.system": {"de": "Wie das Betriebssystem", "en": "Match the system"},
-    "modus.dark": {"de": "Dunkel", "en": "Dark"},
-    "modus.light": {"de": "Hell", "en": "Light"},
+    "mode.system": {"de": "Wie das Betriebssystem", "en": "Match the system"},
+    "mode.dark": {"de": "Dunkel", "en": "Dark"},
+    "mode.light": {"de": "Hell", "en": "Light"},
 }
 
 
 def pruefe_sprache(sprache: str) -> str:
     """Faellt auf die Standardsprache zurueck, statt an einem Tippfehler zu scheitern."""
-    return sprache if sprache in SPRACHEN else STANDARDSPRACHE
+    return sprache if sprache in LANGUAGES else STANDARDSPRACHE
 
 
 def text(schluessel: str, sprache: str = STANDARDSPRACHE) -> str:

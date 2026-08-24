@@ -1,7 +1,7 @@
 """Grundgeruest fuer Einstellungsdialoge.
 
 Links eine Liste der Seiten, rechts der Inhalt, unten Abbrechen und Speichern.
-Zwei Seiten bringt die Bibliothek mit - Darstellung und Speicherort -, die
+Zwei Seiten bringt die Bibliothek mit - Appearance und Speicherort -, die
 uebrigen liefert die Anwendung.
 
 Was die Bibliothek bewusst NICHT kennt: wie die Anwendung ihre Einstellungen
@@ -13,7 +13,7 @@ liest die Anwendung in `uebernehmen()` aus ihren eigenen Feldern.
 
 Eine Unterklasse sieht so aus:
 
-    class MeineEinstellungen(BasisEinstellungenDialog):
+    class MeineEinstellungen(SettingsDialogBase):
         def __init__(self, eigene, parent=None):
             self._eigene = eigene          # VOR super().__init__ setzen
             super().__init__(darstellung_aus(eigene), parent)
@@ -59,16 +59,16 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from .farbe import ist_hell, normalisiere
-from .texte import pruefe_sprache, text
+from .color import is_light, normalize
+from .texts import pruefe_sprache, text
 from .theme import (
-    STANDARD_AKZENT,
-    STANDARD_ZOOM,
-    ZOOMSTUFEN,
-    Modus,
-    akzent,
-    akzent_namen,
-    modus,
+    DEFAULT_ACCENT,
+    DEFAULT_ZOOM,
+    ZOOM_LEVELS,
+    Mode,
+    accent,
+    accent_names,
+    mode,
     zoom,
 )
 
@@ -83,29 +83,29 @@ MINDESTHOEHE = 520
 
 
 @dataclass(frozen=True)
-class Darstellung:
+class Appearance:
     """Was die Darstellungs-Seite einstellt.
 
     Die Anwendung speichert diese drei Werte, wie sie will - die Bibliothek
     liest sie nur beim Oeffnen und gibt sie beim Speichern zurueck.
     """
 
-    modus: Modus = Modus.SYSTEM
-    akzent: str = STANDARD_AKZENT
-    zoom: int = STANDARD_ZOOM
+    mode: Mode = Mode.SYSTEM
+    accent: str = DEFAULT_ACCENT
+    zoom: int = DEFAULT_ZOOM
 
     @classmethod
-    def aktuell(cls) -> Darstellung:
+    def aktuell(cls) -> Appearance:
         """Nimmt den Stand, der gerade gilt - fuer Anwendungen ohne eigene Ablage."""
-        return cls(modus=modus(), akzent=akzent(), zoom=zoom())
+        return cls(mode=mode(), accent=accent(), zoom=zoom())
 
 
-class BasisEinstellungenDialog(QDialog):
+class SettingsDialogBase(QDialog):
     """Geruest und Bausteine fuer Einstellungsdialoge."""
 
     def __init__(
         self,
-        darstellung: Darstellung | None = None,
+        darstellung: Appearance | None = None,
         parent: QWidget | None = None,
         *,
         sprache: str = "de",
@@ -113,7 +113,7 @@ class BasisEinstellungenDialog(QDialog):
     ) -> None:
         super().__init__(parent)
         self._sprache = pruefe_sprache(sprache)
-        self._darstellung = darstellung if darstellung is not None else Darstellung.aktuell()
+        self._darstellung = darstellung if darstellung is not None else Appearance.aktuell()
         self.setWindowTitle(titel or text("einstellungen.titel", self._sprache))
         self.setMinimumSize(MINDESTBREITE, MINDESTHOEHE)
         self.setSizeGripEnabled(True)
@@ -185,8 +185,8 @@ class BasisEinstellungenDialog(QDialog):
     # --- Ergebnis --------------------------------------------------------
 
     @property
-    def darstellung(self) -> Darstellung:
-        """Die eingestellte Darstellung. Nach dem Speichern der neue Stand."""
+    def darstellung(self) -> Appearance:
+        """Die eingestellte Appearance. Nach dem Speichern der neue Stand."""
         return self._darstellung
 
     # --- Bausteine fuer die eigenen Seiten -------------------------------
@@ -266,7 +266,7 @@ class BasisEinstellungenDialog(QDialog):
         knopf = QPushButton()
         knopf.setFixedWidth(FELDBREITE)
         knopf.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._farbe_setzen(knopf, normalisiere(hexwert))
+        self._farbe_setzen(knopf, normalize(hexwert))
         knopf.clicked.connect(lambda: self._farbe_waehlen(knopf, titel))
         return knopf
 
@@ -329,19 +329,19 @@ class BasisEinstellungenDialog(QDialog):
         seite, formular = self.seite(text("einstellungen.darstellung", self._sprache))
 
         self._feld_modus = self.auswahl()
-        for eintrag in (Modus.SYSTEM, Modus.DUNKEL, Modus.HELL):
-            self._feld_modus.addItem(text(f"modus.{eintrag.value}", self._sprache), eintrag.value)
-        self._feld_modus.setCurrentIndex(max(0, self._feld_modus.findData(self._darstellung.modus.value)))
+        for eintrag in (Mode.SYSTEM, Mode.DARK, Mode.LIGHT):
+            self._feld_modus.addItem(text(f"mode.{eintrag.value}", self._sprache), eintrag.value)
+        self._feld_modus.setCurrentIndex(max(0, self._feld_modus.findData(self._darstellung.mode.value)))
         formular.addRow(self.beschriftung(text("einstellungen.erscheinungsbild", self._sprache)), self._feld_modus)
 
         self._feld_akzent = self.auswahl()
-        for schluessel, anzeige in sorted(akzent_namen(self._sprache).items(), key=lambda paar: paar[1]):
+        for schluessel, anzeige in sorted(accent_names(self._sprache).items(), key=lambda paar: paar[1]):
             self._feld_akzent.addItem(anzeige, schluessel)
-        self._feld_akzent.setCurrentIndex(max(0, self._feld_akzent.findData(self._darstellung.akzent)))
+        self._feld_akzent.setCurrentIndex(max(0, self._feld_akzent.findData(self._darstellung.accent)))
         formular.addRow(self.beschriftung(text("einstellungen.akzentfarbe", self._sprache)), self._feld_akzent)
 
         self._feld_zoom = self.auswahl()
-        for stufe in ZOOMSTUFEN:
+        for stufe in ZOOM_LEVELS:
             self._feld_zoom.addItem(f"{stufe} %", stufe)
         self._feld_zoom.setCurrentIndex(max(0, self._feld_zoom.findData(self._darstellung.zoom)))
         formular.addRow(self.beschriftung(text("einstellungen.zoom", self._sprache)), self._feld_zoom)
@@ -384,9 +384,9 @@ class BasisEinstellungenDialog(QDialog):
 
     def _speichern(self) -> None:
         """Sammelt die Darstellung ein, laesst die Anwendung ihre Felder lesen, schliesst."""
-        self._darstellung = Darstellung(
-            modus=Modus(str(self._feld_modus.currentData())),
-            akzent=str(self._feld_akzent.currentData()),
+        self._darstellung = Appearance(
+            mode=Mode(str(self._feld_modus.currentData())),
+            accent=str(self._feld_akzent.currentData()),
             zoom=int(self._feld_zoom.currentData()),
         )
         self.uebernehmen()
@@ -395,7 +395,7 @@ class BasisEinstellungenDialog(QDialog):
     def _farbe_waehlen(self, knopf: QPushButton, titel: str) -> None:
         gewaehlt = QColorDialog.getColor(QColor(f"#{self.farbe_von(knopf)}"), self, titel)
         if gewaehlt.isValid():
-            self._farbe_setzen(knopf, normalisiere(gewaehlt.name()))
+            self._farbe_setzen(knopf, normalize(gewaehlt.name()))
 
     @staticmethod
     def _farbe_setzen(knopf: QPushButton, hexwert: str) -> None:
@@ -406,7 +406,7 @@ class BasisEinstellungenDialog(QDialog):
         """
         knopf.setProperty("farbe", hexwert)
         knopf.setText(f"#{hexwert}")
-        schrift = "#000000" if ist_hell(hexwert) else "#ffffff"
+        schrift = "#000000" if is_light(hexwert) else "#ffffff"
         knopf.setStyleSheet(
             f"background-color: #{hexwert}; color: {schrift};"
             " border: 1px solid rgba(0,0,0,0.25); border-radius: 4px; padding: 5px 10px;"

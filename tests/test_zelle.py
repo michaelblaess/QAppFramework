@@ -21,7 +21,7 @@ from PySide6.QtCore import QRect, Qt  # noqa: E402
 from PySide6.QtGui import QColor, QPainter, QPixmap, QStandardItem, QStandardItemModel  # noqa: E402
 from PySide6.QtWidgets import QApplication, QStyle, QStyleOptionViewItem  # noqa: E402
 
-from QAppFramework.zelle import ZellDelegate  # noqa: E402
+from QAppFramework.cell import CellDelegate  # noqa: E402
 
 BREITE, HOEHE = 200, 24
 GRUND = QColor("#ffffff")
@@ -57,7 +57,7 @@ def _gezeichnet(app: QApplication, text: str, *, rechtsbuendig: bool = True) -> 
     bild = QPixmap(BREITE, HOEHE)
     bild.fill(GRUND)
     maler = QPainter(bild)
-    ZellDelegate().paint(maler, opt, modell.index(0, 0))
+    CellDelegate().paint(maler, opt, modell.index(0, 0))
     maler.end()
     return bild
 
@@ -114,33 +114,33 @@ class TestInnenabstand:
 
 class TestHervorhebung:
     def test_der_treffer_wird_eingefaerbt(self) -> None:
-        html = ZellDelegate.hervorhebung("Bericht erstellen", "richt")
+        html = CellDelegate.hervorhebung("Bericht erstellen", "richt")
         assert "<span style=" in html
         assert ">richt</span>" in html
 
     def test_ohne_begriff_bleibt_der_text_schlicht(self) -> None:
-        assert ZellDelegate.hervorhebung("Bericht", "") == "Bericht"
+        assert CellDelegate.hervorhebung("Bericht", "") == "Bericht"
 
     def test_gross_und_klein_wird_gefunden(self) -> None:
-        assert "<span" in ZellDelegate.hervorhebung("Bericht", "BER")
+        assert "<span" in CellDelegate.hervorhebung("Bericht", "BER")
 
     def test_spitze_klammern_werden_maskiert(self) -> None:
         """Sonst liest Qt den Zellinhalt als Auszeichnung - fremder Text ist kein HTML."""
-        html = ZellDelegate.hervorhebung("<b>fett</b> & mehr", "")
+        html = CellDelegate.hervorhebung("<b>fett</b> & mehr", "")
         assert "&lt;b&gt;" in html
         assert "&amp;" in html
         assert "<b>" not in html
 
     def test_maskierung_greift_auch_mit_suchbegriff(self) -> None:
-        html = ZellDelegate.hervorhebung("<script>x</script>", "script")
+        html = CellDelegate.hervorhebung("<script>x</script>", "script")
         assert "<script>" not in html
         assert "&lt;" in html
 
     def test_ein_treffer_mit_sonderzeichen_sprengt_das_muster_nicht(self) -> None:
         """re.escape - sonst ist ein '(' im Suchfeld ein Programmabbruch."""
-        assert ZellDelegate.hervorhebung("Summe (netto)", "(netto)").count("<span") == 1
+        assert CellDelegate.hervorhebung("Summe (netto)", "(netto)").count("<span") == 1
 
     def test_der_delegate_merkt_sich_den_begriff(self, app: QApplication) -> None:
-        delegate = ZellDelegate()
+        delegate = CellDelegate()
         delegate.setze_suchbegriff("abc")
         assert delegate._needle == "abc"

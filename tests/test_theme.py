@@ -18,7 +18,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 pytest.importorskip("PySide6", reason="Erscheinungsbild gehoert zur Desktop-Oberflaeche")
 
-from QAppFramework.theme import DUNKEL, HELL, TOOLBAR_ICON_SIZE, baue_qss  # noqa: E402
+from QAppFramework.theme import DARK, LIGHT, TOOLBAR_ICON_SIZE, build_stylesheet  # noqa: E402
 
 # Werte aus jira-timesheet-qt 0.7.1, ui/theme.py. Bei einer Aenderung DORT
 # gehoeren sie hier nachgezogen - nicht umgekehrt.
@@ -48,44 +48,44 @@ JIRA_TIMESHEET_DUNKEL = {
 class TestPalette:
     @pytest.mark.parametrize(("feld", "wert"), sorted(JIRA_TIMESHEET_HELL.items()))
     def test_helle_palette_stimmt_ueberein(self, feld: str, wert: str) -> None:
-        assert getattr(HELL, feld) == wert
+        assert getattr(LIGHT, feld) == wert
 
     @pytest.mark.parametrize(("feld", "wert"), sorted(JIRA_TIMESHEET_DUNKEL.items()))
     def test_dunkle_palette_stimmt_ueberein(self, feld: str, wert: str) -> None:
-        assert getattr(DUNKEL, feld) == wert
+        assert getattr(DARK, feld) == wert
 
     def test_der_akzent_ist_orange_nicht_blau(self) -> None:
         """Die Akzentfarbe traegt die Wiedererkennung - sie faerbt den aktiven Reiter."""
-        assert HELL.accent == "#e8590c"
-        assert DUNKEL.accent == "#ff922b"
+        assert LIGHT.accent == "#e8590c"
+        assert DARK.accent == "#ff922b"
 
 
 class TestReiter:
     def test_der_aktive_reiter_traegt_die_akzentfarbe(self) -> None:
-        qss = baue_qss(HELL)
+        qss = build_stylesheet(LIGHT)
         assert "#ViewTabs::tab:selected" in qss
-        assert f"color: {HELL.accent}" in qss
+        assert f"color: {LIGHT.accent}" in qss
 
     def test_der_aktive_reiter_ist_fett_und_unterstrichen(self) -> None:
-        qss = baue_qss(HELL)
+        qss = build_stylesheet(LIGHT)
         block = qss[qss.index("#ViewTabs::tab:selected") :][:200]
         assert "font-weight: 700" in block
-        assert f"border-bottom: 2px solid {HELL.accent}" in block
+        assert f"border-bottom: 2px solid {LIGHT.accent}" in block
 
     def test_die_reiterleiste_heisst_viewtabs(self) -> None:
         """Derselbe Objektname wie dort - sonst greifen die Regeln nicht."""
-        assert "#ViewTabs {" in baue_qss(HELL)
+        assert "#ViewTabs {" in build_stylesheet(LIGHT)
 
 
 class TestWerkzeugleiste:
     def test_die_abstaende_stimmen_ueberein(self) -> None:
-        qss = baue_qss(HELL)
+        qss = build_stylesheet(LIGHT)
         block = qss[qss.index("QToolBar {") :][:200]
         assert "padding: 3px 6px" in block
         assert "spacing: 2px" in block
 
     def test_die_knoepfe_sind_flach_bis_zum_hover(self) -> None:
-        qss = baue_qss(HELL)
+        qss = build_stylesheet(LIGHT)
         block = qss[qss.index("QToolButton {") :][:200]
         assert "background: transparent" in block
         assert "border: none" in block

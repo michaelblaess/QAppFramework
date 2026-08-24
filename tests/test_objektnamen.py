@@ -24,7 +24,7 @@ from PySide6.QtCore import Qt  # noqa: E402
 from PySide6.QtGui import QPixmap  # noqa: E402
 from PySide6.QtWidgets import QApplication, QLabel  # noqa: E402
 
-from QAppFramework.theme import HELL, baue_qss  # noqa: E402
+from QAppFramework.theme import LIGHT, build_stylesheet  # noqa: E402
 
 
 def _namen() -> list[str]:
@@ -33,7 +33,7 @@ def _namen() -> list[str]:
     Aus dem Stylesheet gelesen statt von Hand gepflegt: so wird jeder neu
     hinzugefuegte Name automatisch mitgeprueft.
     """
-    treffer = re.findall(r"#([A-Za-z][A-Za-z0-9_]*)\s*(?:\{|::|\[)", baue_qss(HELL))
+    treffer = re.findall(r"#([A-Za-z][A-Za-z0-9_]*)\s*(?:\{|::|\[)", build_stylesheet(LIGHT))
     return sorted(set(treffer))
 
 
@@ -63,7 +63,7 @@ def _gezeichnet(app: QApplication, name: str) -> bytes:
     Aufruf zu Aufruf (01000000 / 500143f6, gemessen). Der Test fiel dadurch
     in zwei von zehn Laeufen, ohne dass sich etwas geaendert hatte.
     """
-    app.setStyleSheet(baue_qss(HELL))
+    app.setStyleSheet(build_stylesheet(LIGHT))
     label = QLabel("Beispiel")
     label.setObjectName(name)
     label.setAttribute(Qt.WidgetAttribute.WA_DontShowOnScreen)
@@ -86,7 +86,7 @@ class TestObjektnamen:
     def test_der_name_veraendert_die_darstellung(self, app: QApplication, name: str) -> None:
         """Jeder Name im Stylesheet muss sichtbar etwas bewirken."""
         assert _gezeichnet(app, name) != _gezeichnet(app, ""), (
-            f"#{name} steht im Stylesheet, aendert aber nichts an der Darstellung"
+            f"#{name} steht im Stylesheet, aendert aber nichts an der Appearance"
         )
 
     def test_die_pruefung_kann_scheitern(self, app: QApplication) -> None:

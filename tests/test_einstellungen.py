@@ -2,7 +2,7 @@
 
 Geprueft wird an einer echten Unterklasse, nicht an der Basis allein: das
 Zusammenspiel ist der Punkt - die Anwendung liefert Seiten und liest ihre
-Felder aus, die Bibliothek liefert Geruest, Darstellung und Speicherort.
+Felder aus, die Bibliothek liefert Geruest, Appearance und Speicherort.
 """
 
 from __future__ import annotations
@@ -27,17 +27,17 @@ from PySide6.QtWidgets import (  # noqa: E402
     QWidget,
 )
 
-from QAppFramework.einstellungen import (  # noqa: E402
-    BasisEinstellungenDialog,
-    Darstellung,
+from QAppFramework.settings import (  # noqa: E402
+    Appearance,
+    SettingsDialogBase,
 )
-from QAppFramework.theme import Modus, anwenden  # noqa: E402
+from QAppFramework.theme import Mode, apply_theme  # noqa: E402
 
 
-class ProbeDialog(BasisEinstellungenDialog):
+class ProbeDialog(SettingsDialogBase):
     """Eine Anwendung mit einer eigenen Seite und einem Speicherort."""
 
-    def __init__(self, darstellung: Darstellung, orte: Sequence[tuple[str, Path]] = (), **rest: object) -> None:
+    def __init__(self, darstellung: Appearance, orte: Sequence[tuple[str, Path]] = (), **rest: object) -> None:
         # VOR super().__init__ - der Konstruktor der Basis ruft eigene_seiten().
         self.gelesen = ""
         self._orte = tuple(orte)
@@ -63,14 +63,14 @@ class ProbeDialog(BasisEinstellungenDialog):
 def app() -> QApplication:
     vorhanden = QApplication.instance()
     fertig = vorhanden if isinstance(vorhanden, QApplication) else QApplication([])
-    anwenden(fertig, dunkel=False)
+    apply_theme(fertig, dunkel=False)
     return fertig
 
 
 @pytest.fixture
 def dialog(app: QApplication, tmp_path: Path) -> Iterator[ProbeDialog]:
     d = ProbeDialog(
-        Darstellung(modus=Modus.HELL, akzent="blau", zoom=110),
+        Appearance(mode=Mode.LIGHT, accent="blau", zoom=110),
         orte=[("Einstellungen", tmp_path / "einstellungen.json")],
     )
     d.show()
@@ -81,11 +81,11 @@ def dialog(app: QApplication, tmp_path: Path) -> Iterator[ProbeDialog]:
 
 class TestGeruest:
     def test_die_eigene_seite_steht_vor_denen_der_bibliothek(self, dialog: ProbeDialog) -> None:
-        """Darstellung und Speicherort gehoeren ans Ende - dort sucht sie jeder."""
+        """Appearance und Speicherort gehoeren ans Ende - dort sucht sie jeder."""
         nav = dialog.findChild(QListWidget, "SettingsNav")
         assert nav is not None
         beschriftungen = [nav.item(i).text() for i in range(nav.count())]
-        assert beschriftungen == ["Zugang", "Darstellung", "Speicherort"]
+        assert beschriftungen == ["Zugang", "Appearance", "Speicherort"]
 
     def test_die_erste_seite_ist_vorgewaehlt(self, dialog: ProbeDialog) -> None:
         nav = dialog.findChild(QListWidget, "SettingsNav")
@@ -93,10 +93,10 @@ class TestGeruest:
         assert nav.currentRow() == 0
 
     def test_ohne_speicherorte_bleibt_die_seite_weg(self, app: QApplication) -> None:
-        d = ProbeDialog(Darstellung())
+        d = ProbeDialog(Appearance())
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
-        assert [nav.item(i).text() for i in range(nav.count())] == ["Zugang", "Darstellung"]
+        assert [nav.item(i).text() for i in range(nav.count())] == ["Zugang", "Appearance"]
         d.close()
 
     def test_jede_seite_liegt_in_einem_bildlaufbereich(self, dialog: ProbeDialog) -> None:
@@ -111,16 +111,16 @@ class TestGeruest:
 
 class TestDarstellung:
     def test_die_uebergebenen_werte_stehen_in_den_feldern(self, dialog: ProbeDialog) -> None:
-        assert dialog._feld_modus.currentData() == Modus.HELL.value
+        assert dialog._feld_modus.currentData() == Mode.LIGHT.value
         assert dialog._feld_akzent.currentData() == "blau"
         assert dialog._feld_zoom.currentData() == 110
 
     def test_speichern_gibt_die_geaenderte_darstellung_zurueck(self, dialog: ProbeDialog) -> None:
-        dialog._feld_modus.setCurrentIndex(dialog._feld_modus.findData(Modus.DUNKEL.value))
+        dialog._feld_modus.setCurrentIndex(dialog._feld_modus.findData(Mode.DARK.value))
         dialog._feld_akzent.setCurrentIndex(dialog._feld_akzent.findData("gruen"))
         dialog._feld_zoom.setCurrentIndex(dialog._feld_zoom.findData(125))
         dialog._speichern()
-        assert dialog.darstellung == Darstellung(modus=Modus.DUNKEL, akzent="gruen", zoom=125)
+        assert dialog.darstellung == Appearance(mode=Mode.DARK, accent="gruen", zoom=125)
 
     def test_abbrechen_laesst_die_darstellung_stehen(self, dialog: ProbeDialog) -> None:
         vorher = dialog.darstellung
@@ -129,10 +129,10 @@ class TestDarstellung:
         assert dialog.darstellung == vorher
 
     def test_die_auswahl_zeigt_alle_akzentfarben(self, dialog: ProbeDialog) -> None:
-        from QAppFramework.theme import AKZENTE
+        from QAppFramework.theme import ACCENTS
 
         werte = {dialog._feld_akzent.itemData(i) for i in range(dialog._feld_akzent.count())}
-        assert werte == set(AKZENTE)
+        assert werte == set(ACCENTS)
 
     def test_die_auswahl_passt_sich_langen_eintraegen_an(self, dialog: ProbeDialog) -> None:
         """Ohne AdjustToContents bleibt sie auf der Breite des ersten Anzeigens stehen."""
@@ -158,7 +158,7 @@ class TestEigeneSeite:
 
     def test_der_farbknopf_waehlt_lesbare_schrift(self, app: QApplication) -> None:
         """Auf dunklem Grund weiss, auf hellem schwarz - sonst liest es niemand."""
-        d = ProbeDialog(Darstellung())
+        d = ProbeDialog(Appearance())
         for wert, erwartet in (("FFFF00", "#000000"), ("101010", "#ffffff")):
             knopf = d.farbknopf(wert)
             assert erwartet in knopf.styleSheet()
@@ -178,13 +178,13 @@ class TestSpeicherort:
         """Sonst tut der Klick beim ersten Start nichts, und niemand weiss warum."""
         ziel = tmp_path / "neu" / "datei.json"
         assert not ziel.parent.exists()
-        BasisEinstellungenDialog.oeffne(ziel)
+        SettingsDialogBase.oeffne(ziel)
         assert ziel.parent.is_dir()
 
 
 class TestSprache:
     def test_englisch_uebersetzt_geruest_und_seiten(self, app: QApplication) -> None:
-        d = ProbeDialog(Darstellung(), sprache="en")
+        d = ProbeDialog(Appearance(), sprache="en")
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
         assert [nav.item(i).text() for i in range(nav.count())] == ["Zugang", "Appearance"]
@@ -197,7 +197,7 @@ class TestErweiterteDarstellung:
     """Eigene Zeilen auf der Darstellungs-Seite.
 
     Fuer Markierungsfarben und Ampelschwellen: sie gehoeren fuer den Anwender
-    zur Darstellung, auch wenn nur eine Anwendung sie kennt.
+    zur Appearance, auch wenn nur eine Anwendung sie kennt.
     """
 
     def test_eigene_zeilen_stehen_auf_der_seite(self, app: QApplication) -> None:
@@ -208,7 +208,7 @@ class TestErweiterteDarstellung:
                 self.haken = QCheckBox("Manuelle Zeiten hervorheben")
                 formular.addRow(self.beschriftung(""), self.haken)
 
-        d = MitErweiterung(Darstellung())
+        d = MitErweiterung(Appearance())
         d.show()
         app.processEvents()
         # Ueber findChild: das Widget muss wirklich im Dialog haengen, nicht
@@ -217,7 +217,7 @@ class TestErweiterteDarstellung:
         # Und zwar auf der Darstellungs-Seite, nicht irgendwo.
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
-        nav.setCurrentRow([nav.item(i).text() for i in range(nav.count())].index("Darstellung"))
+        nav.setCurrentRow([nav.item(i).text() for i in range(nav.count())].index("Appearance"))
         app.processEvents()
         assert d.haken.isVisible(), "Die eigene Zeile steht nicht auf der Darstellungs-Seite"
         d.close()
