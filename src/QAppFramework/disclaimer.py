@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Fassung des Hinweistextes. Bei inhaltlichen Aenderungen hochzaehlen - dann
 # wird die Zustimmung erneut eingeholt, statt eine alte Fassung fortzuschreiben.
-DISCLAIMER_VERSION = "2026-08-14"
+DISCLAIMER_VERSION = "2026-08-24"
 
 FENSTERTITEL = "Disclaimer"
 TITLE = "Nutzung auf eigene Verantwortung"
