@@ -39,7 +39,7 @@ TEXTE: dict[str, dict[str, str]] = {
     "absturz.beenden": {"de": "Beenden", "en": "Quit"},
     "absturz.weiter": {"de": "Weiterarbeiten", "en": "Carry on"},
     "einstellungen.titel": {"de": "Einstellungen", "en": "Settings"},
-    "einstellungen.darstellung": {"de": "Appearance", "en": "Appearance"},
+    "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},
     "einstellungen.akzentfarbe": {"de": "Akzentfarbe", "en": "Accent colour"},
     "einstellungen.zoom": {"de": "Zoom", "en": "Zoom"},

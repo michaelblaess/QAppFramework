@@ -85,7 +85,7 @@ class TestGeruest:
         nav = dialog.findChild(QListWidget, "SettingsNav")
         assert nav is not None
         beschriftungen = [nav.item(i).text() for i in range(nav.count())]
-        assert beschriftungen == ["Zugang", "Appearance", "Speicherort"]
+        assert beschriftungen == ["Zugang", "Darstellung", "Speicherort"]
 
     def test_die_erste_seite_ist_vorgewaehlt(self, dialog: ProbeDialog) -> None:
         nav = dialog.findChild(QListWidget, "SettingsNav")
@@ -96,7 +96,7 @@ class TestGeruest:
         d = ProbeDialog(Appearance())
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
-        assert [nav.item(i).text() for i in range(nav.count())] == ["Zugang", "Appearance"]
+        assert [nav.item(i).text() for i in range(nav.count())] == ["Zugang", "Darstellung"]
         d.close()
 
     def test_jede_seite_liegt_in_einem_bildlaufbereich(self, dialog: ProbeDialog) -> None:
@@ -217,7 +217,7 @@ class TestErweiterteDarstellung:
         # Und zwar auf der Darstellungs-Seite, nicht irgendwo.
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
-        nav.setCurrentRow([nav.item(i).text() for i in range(nav.count())].index("Appearance"))
+        nav.setCurrentRow([nav.item(i).text() for i in range(nav.count())].index("Darstellung"))
         app.processEvents()
         assert d.haken.isVisible(), "Die eigene Zeile steht nicht auf der Darstellungs-Seite"
         d.close()
