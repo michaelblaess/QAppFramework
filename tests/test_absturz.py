@@ -9,7 +9,10 @@ dass ein Abbruch von aussen NICHT als Absturz gemeldet wird.
 from __future__ import annotations
 
 import os
+import signal
 import sys
+import threading
+import time
 from collections.abc import Iterator
 
 import pytest
@@ -18,9 +21,15 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 pytest.importorskip("PySide6", reason="Der Fehlerdialog gehoert zur Desktop-Oberflaeche")
 
+from PySide6.QtCore import QTimer  # noqa: E402
 from PySide6.QtWidgets import QApplication, QPlainTextEdit, QPushButton  # noqa: E402
 
-from QAppFramework.absturz import FehlerDialog, baue_bericht, einhaengen  # noqa: E402
+from QAppFramework.absturz import (  # noqa: E402
+    FehlerDialog,
+    abbruch_abfangen,
+    baue_bericht,
+    einhaengen,
+)
 from QAppFramework.theme import anwenden  # noqa: E402
 
 
@@ -157,3 +166,67 @@ class TestEinhaengen:
         fehlerausgabe = capsys.readouterr().err
         assert "etwas ist schiefgelaufen" in fehlerausgabe
         assert "nicht gespeichert" in fehlerausgabe
+
+
+class TestAbbruchAbfangen:
+    """Strg+C muss die Schleife verlassen, nicht irgendwo eine Ausnahme werfen."""
+
+    @pytest.fixture(autouse=True)
+    def _behandler_zuruecksetzen(self) -> Iterator[None]:
+        vorher = signal.getsignal(signal.SIGINT)
+        yield
+        signal.signal(signal.SIGINT, vorher)
+
+    def test_strg_c_beendet_die_schleife_zuegig(self, app: QApplication) -> None:
+        """Der Kern der Sache, und er kann scheitern.
+
+        Ohne den Wecker in `abbruch_abfangen` kommt der Behandler nie an die
+        Reihe, solange Qt in seiner eigenen Schleife wartet - dann greift erst
+        die Notbremse und die gemessene Zeit reisst die Schranke.
+        """
+        wecker = abbruch_abfangen(app, takt_ms=50)
+        notbremse = QTimer()
+        notbremse.setSingleShot(True)
+        notbremse.timeout.connect(app.quit)
+        notbremse.start(3000)
+
+        # Aus einem Nebenlaeufer, damit SIGINT die wartende Schleife trifft und
+        # nicht zufaellig gerade laufenden Python-Code.
+        threading.Timer(0.3, lambda: signal.raise_signal(signal.SIGINT)).start()
+        begonnen = time.monotonic()
+        app.exec()
+        gebraucht = time.monotonic() - begonnen
+
+        wecker.stop()
+        notbremse.stop()
+        assert gebraucht < 1.5, f"Strg+C wirkte erst nach {gebraucht:.2f}s"
+
+    def test_der_behandler_haengt_am_signal(self, app: QApplication) -> None:
+        """Ohne eigenen Behandler wuerde SIGINT zu einem KeyboardInterrupt."""
+        wecker = abbruch_abfangen(app)
+        try:
+            assert signal.getsignal(signal.SIGINT) is not signal.default_int_handler
+        finally:
+            wecker.stop()
+
+    def test_der_wecker_haengt_an_der_anwendung(self, app: QApplication) -> None:
+        """Sonst raeumt Python ihn ab und der Behandler kommt nie an die Reihe."""
+        wecker = abbruch_abfangen(app)
+        try:
+            assert wecker.parent() is app
+            assert wecker.isActive()
+        finally:
+            wecker.stop()
+
+    def test_die_meldung_nennt_den_grund(
+        self, app: QApplication, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        """Wer in der Konsole Strg+C drueckt, soll eine Bestaetigung sehen."""
+        wecker = abbruch_abfangen(app)
+        try:
+            behandler = signal.getsignal(signal.SIGINT)
+            assert callable(behandler)
+            behandler(signal.SIGINT, None)
+            assert "Anwendung wird beendet" in capsys.readouterr().err
+        finally:
+            wecker.stop()

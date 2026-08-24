@@ -9,17 +9,21 @@ den Anwender entscheiden, ob er weiterarbeitet oder beendet. In fremden
 Umgebungen ist das der Unterschied zwischen einer brauchbaren Meldung und
 "war auf einmal weg".
 
+Dazu `abbruch_abfangen`: Strg+C nimmt sonst den Umweg ueber eine Ausnahme
+und trifft dabei zufaelligen Code - oder wirkt gar nicht.
+
 Uebernommen aus jira-timesheet-qt 0.7.2.
 """
 
 from __future__ import annotations
 
+import signal
 import sys
 import traceback
 from collections.abc import Callable
 from types import TracebackType
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, Qt, QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QApplication,
@@ -198,3 +202,52 @@ def einhaengen(
             laeuft["wert"] = False
 
     sys.excepthook = behandeln
+
+
+def abbruch_abfangen(
+    anwendung: QCoreApplication,
+    *,
+    takt_ms: int = 200,
+) -> QTimer:
+    """Beendet die Anwendung bei Strg+C geordnet, ohne Python-Ausnahme.
+
+    Ohne diesen Haken wird SIGINT zu einem `KeyboardInterrupt`, den der
+    Interpreter erst an der naechsten Bytecode-Grenze wirft. Waehrend Qt in
+    seiner C++-Ereignisschleife sitzt, laeuft gar kein Python - der Abbruch
+    trifft deshalb irgendwann irgendeinen Slot, ein `paintEvent` oder einen
+    `eventFilter`. Gemessen an einer leerlaufenden Anwendung: erst nach drei
+    Sekunden, und ohne jede Bedienung ueberhaupt nicht.
+
+    Sichtbar wird das als Zeile von shiboken auf der Fehlerausgabe, etwa
+    "Error calling Python override of QMainWindow::eventFilter()" - sie zeigt
+    auf unschuldigen Code, weil dort nur zufaellig der Abbruch ankam.
+
+    Ein eigener Signalbehandler nimmt SIGINT entgegen, bevor daraus eine
+    Ausnahme wird, und beendet ueber `quit()` - damit laeuft `closeEvent`, die
+    Einstellungen werden gesichert und auf laufende Faeden wird gewartet.
+
+    Args:
+        anwendung:
+            Die laufende QApplication beziehungsweise QCoreApplication.
+        takt_ms:
+            Abstand des Weckers in Millisekunden.
+
+    Returns:
+        Den Wecker. Er haengt an der Anwendung und muss nicht gehalten werden -
+        die Rueckgabe dient dem Anhalten in Tests.
+    """
+
+    def beenden(nummer: int, rahmen: object) -> None:  # noqa: ARG001 - Signatur gibt signal vor
+        sys.stderr.write("Abbruch angefordert - Anwendung wird beendet.\n")
+        sys.stderr.flush()
+        anwendung.quit()
+
+    signal.signal(signal.SIGINT, beenden)
+    # Python fuehrt Signalbehandler nur zwischen zwei Bytecodes aus. Solange Qt
+    # in seiner eigenen Schleife wartet, kommt der Interpreter nie an die Reihe
+    # und der Behandler oben liefe nie - dieser Wecker gibt ihm regelmaessig das
+    # Wort. Ohne ihn bleibt Strg+C wirkungslos, mit ihm greift es im Takt.
+    wecker = QTimer(anwendung)
+    wecker.timeout.connect(lambda: None)
+    wecker.start(takt_ms)
+    return wecker

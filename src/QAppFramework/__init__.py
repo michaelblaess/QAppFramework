@@ -6,7 +6,7 @@ wer von einer zur naechsten wechselt, soll sich nicht umgewoehnen muessen.
 Enthalten:
 
 - about:         Info-Dialog mit Zitatpool
-- absturz:       Fehlerdialog statt wortlosem Abbruch
+- absturz:       Fehlerdialog statt wortlosem Abbruch, geordnetes Strg+C
 - zelle:         Zell-Delegate mit Innenabstand und Trefferhervorhebung
 - einstellungen: Geruest fuer Einstellungsdialoge, Seiten Darstellung und Speicherort
 - farbe:         Farbeingaben normalisieren
@@ -21,7 +21,7 @@ wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 """
 
 from .about import AboutDialog, Zitat, lade_zitate
-from .absturz import FehlerDialog, baue_bericht, einhaengen
+from .absturz import FehlerDialog, abbruch_abfangen, baue_bericht, einhaengen
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .einstellungen import BasisEinstellungenDialog, Darstellung
 from .farbe import ist_hell, normalisiere
@@ -85,6 +85,7 @@ __all__ = [
     "Zitat",
     "__author__",
     "__version__",
+    "abbruch_abfangen",
     "akzent",
     "akzent_namen",
     "anwenden",
