@@ -122,7 +122,7 @@ class TestAboutDialog:
         angaben = beschriftung(dialog, "AboutFacts").text()
         assert "Michael Blaess" in angaben
         assert "2026" in angaben
-        assert "Apache-2.0" in angaben, "Michaels Vorgabelizenz fehlt"
+        assert "BUSL-1.1" in angaben, "Die Lizenzangabe fehlt"
         dialog.close()
 
     def test_ein_festes_zitat_wird_uebernommen(self, app: QApplication) -> None:

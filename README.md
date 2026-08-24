@@ -53,5 +53,10 @@ Anything only one application needs. A building block moves in here once the
 
 ## License
 
-Apache-2.0. The bundled Material Design Icons (via QtAwesome) are Apache-2.0 as
-well.
+**Business Source License 1.1** (see [LICENSE](LICENSE)). Reading, building and using
+it yourself in your own projects is free as a private person, as long as the result is
+not offered to third parties for a fee. Use by organizations or in commercial products
+requires a commercial licence - just get in touch. Every version turns into the
+**Mozilla Public License 2.0** four years after its release.
+
+The bundled Material Design Icons (via QtAwesome) remain Apache-2.0.

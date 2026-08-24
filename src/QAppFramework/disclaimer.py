@@ -66,8 +66,8 @@ DUTIES: tuple[str, ...] = (
 # sein. Drei getrennte Absaetze (Gewaehrleistung, Haftung, gesetzliche Grenze),
 # sonst liest sich der Block als Textwand.
 LIABILITY = (
-    'Die Software wird unentgeltlich und ohne jede Gewährleistung bereitgestellt ("as is"), wie in '
-    "Abschnitt 7 der Apache-Lizenz 2.0 beschrieben.\n\n"
+    'Die Software wird ohne jede Gewährleistung bereitgestellt ("as is"), wie in '
+    "der Lizenz beschrieben.\n\n"
     "Eine Haftung des Autors{autor} für Schäden, die aus der Nutzung entstehen, ist ausgeschlossen, "
     "soweit dies gesetzlich zulässig ist.\n\n"
     "Unberührt bleibt die Haftung für Vorsatz und grobe Fahrlässigkeit, für Schäden aus der "

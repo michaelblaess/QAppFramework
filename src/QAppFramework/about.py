@@ -40,7 +40,7 @@ from .texte import pruefe_sprache, text
 logger = logging.getLogger(__name__)
 
 HOMEPAGE_URL = "https://www.michaelblaess.de/"
-LIZENZ = "Apache-2.0"
+LIZENZ = "BUSL-1.1"
 
 # Feste Breite: der Inhalt ist ueberschaubar, und ein Dialog, der mit der
 # Laenge des gezogenen Zitats die Breite wechselt, wirkt unruhig. Die

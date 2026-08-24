@@ -57,7 +57,7 @@ from .theme import (
 )
 from .zelle import ZELLRAND_RECHTS, ZellDelegate
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
