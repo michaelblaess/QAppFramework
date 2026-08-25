@@ -10,6 +10,7 @@ license = "BUSL-1.1"
 requires-python = ">=3.12"
 authors = [{ name = "Michael Blaess" }]
 dependencies = [
+    "pynacl>=1.6.2",
     "PySide6>=6.8",
     # Material Design Icons (Apache 2.0) als zur Laufzeit einfaerbbare QIcons.
     "QtAwesome>=1.4",

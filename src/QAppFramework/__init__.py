@@ -7,6 +7,7 @@ Enthalten:
 
 - about:         Info-Dialog mit Zitatpool
 - absturz:       Fehlerdialog statt wortlosem Abbruch, geordnetes Strg+C
+- registration:  Schluessel pruefen und Testzeitraum rechnen, ohne Oberflaeche
 - zelle:         Zell-Delegate mit Innenabstand und Trefferhervorhebung
 - einstellungen: Geruest fuer Einstellungsdialoge, Seiten Appearance und Speicherort
 - farbe:         Farbeingaben normalisieren
@@ -26,6 +27,18 @@ from .color import is_light, normalize
 from .crash import ErrorDialog, build_report, install_error_handler, install_interrupt_handler
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .icons import GLYPHS, load_icon
+from .registration import (
+    License,
+    Registration,
+    RegistrationMode,
+    RegistrationOutcome,
+    RegistrationStore,
+    check_registration,
+    create_keypair,
+    days_left,
+    sign,
+    verify,
+)
 from .settings import Appearance, SettingsDialogBase
 from .texts import LANGUAGES, text
 from .theme import (
@@ -61,6 +74,16 @@ __version__ = "0.11.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
+    "verify",
+    "sign",
+    "days_left",
+    "create_keypair",
+    "check_registration",
+    "RegistrationStore",
+    "RegistrationOutcome",
+    "RegistrationMode",
+    "Registration",
+    "License",
     "ACCENTS",
     "AboutDialog",
     "Accent",
