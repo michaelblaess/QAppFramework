@@ -38,6 +38,68 @@ TEXTE: dict[str, dict[str, str]] = {
     "absturz.kopieren": {"de": "Bericht kopieren", "en": "Copy report"},
     "absturz.beenden": {"de": "Beenden", "en": "Quit"},
     "absturz.weiter": {"de": "Weiterarbeiten", "en": "Carry on"},
+    "about.registrieren": {"de": "Registrieren ...", "en": "Register ..."},
+    "about.registriert": {
+        "de": "Registriert für {mail}",
+        "en": "Registered to {mail}",
+    },
+    "about.nicht_registriert": {
+        "de": "Nicht registriert",
+        "en": "Not registered",
+    },
+    "about.testzeit": {
+        "de": "Testzeitraum - noch {tage} Tage",
+        "en": "Trial period - {tage} days left",
+    },
+    "about.testzeit_abgelaufen": {
+        "de": "Testzeitraum abgelaufen",
+        "en": "Trial period has ended",
+    },
+    "registrierung.titel": {"de": "Registrierung", "en": "Registration"},
+    "registrierung.freiwillig": {
+        "de": "Diese Anwendung lässt sich uneingeschränkt nutzen. Wer sich registriert, "
+              "bekommt zusätzliche Funktionen und wird über neue Versionen informiert. "
+              "Diese Frage erscheint nur dieses eine Mal.",
+        "en": "This application is fully usable as is. Registering unlocks additional "
+              "features and keeps you informed about new versions. You will only be asked "
+              "this once.",
+    },
+    "registrierung.testzeit": {
+        "de": "Der Testzeitraum läuft noch {tage} Tage. Danach wird ein Schlüssel benötigt.",
+        "en": "Your trial period runs for another {tage} days. After that a key is required.",
+    },
+    "registrierung.abgelaufen": {
+        "de": "Der Testzeitraum ist abgelaufen. Zum Weiterarbeiten wird ein Schlüssel benötigt.",
+        "en": "Your trial period has ended. A key is required to continue.",
+    },
+    "registrierung.pflicht": {
+        "de": "Zum Verwenden dieser Anwendung wird ein Schlüssel benötigt.",
+        "en": "A key is required to use this application.",
+    },
+    "registrierung.datei_platzhalter": {
+        "de": "Noch keine Lizenzdatei ausgewählt",
+        "en": "No licence file selected yet",
+    },
+    "registrierung.datei_waehlen": {"de": "Datei wählen ...", "en": "Choose file ..."},
+    "registrierung.oder_einfuegen": {
+        "de": "Oder den Inhalt der Lizenzdatei hier einfügen:",
+        "en": "Or paste the contents of your licence file here:",
+    },
+    "registrierung.gueltig": {
+        "de": "Schlüssel gültig, ausgestellt für {mail}",
+        "en": "Key valid, issued to {mail}",
+    },
+    "registrierung.ungueltig": {
+        "de": "Dieser Schlüssel ist nicht gültig. Bitte prüfe, ob der Inhalt vollständig ist.",
+        "en": "This key is not valid. Please check that the contents are complete.",
+    },
+    "registrierung.datei_fehler": {
+        "de": "Die Datei konnte nicht gelesen werden.",
+        "en": "The file could not be read.",
+    },
+    "registrierung.uebernehmen": {"de": "Übernehmen", "en": "Apply"},
+    "registrierung.spaeter": {"de": "Später", "en": "Later"},
+    "registrierung.beenden": {"de": "Beenden", "en": "Quit"},
     "einstellungen.titel": {"de": "Einstellungen", "en": "Settings"},
     "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},

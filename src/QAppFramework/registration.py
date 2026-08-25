@@ -37,10 +37,12 @@ class RegistrationMode(Enum):
     """Ohne Schluessel geht es nicht weiter."""
 
     TRIAL = auto()
-    """Ohne Schluessel nur fuer eine begrenzte Zeit."""
+    """Ohne Schluessel nur fuer eine begrenzte Zeit. Gefragt wird bei JEDEM
+    Start - wegklickbar, solange die Frist laeuft, danach ist Schluss."""
 
     FREE = auto()
-    """Ohne Schluessel dauerhaft nutzbar, die Registrierung ist erwuenscht."""
+    """Ohne Schluessel dauerhaft nutzbar. Gefragt wird genau EINMAL - beim
+    ersten Start. Wer ablehnt, wird nicht wieder behelligt."""
 
 
 class RegistrationOutcome(Enum):
@@ -184,6 +186,9 @@ class Registration:
 
     license: License | None = None
     trial: TrialState | None = None
+    asked: bool = False
+    """Ob im Modus FREE schon einmal gefragt wurde. Dort ist eine zweite
+    Nachfrage keine Erinnerung mehr, sondern Belaestigung."""
 
 
 class RegistrationStore:
@@ -225,11 +230,11 @@ class RegistrationStore:
                 )
         except Exception:
             logger.warning("Testzeitraum konnte nicht gelesen werden")
-        return Registration(license=lizenz, trial=versuch)
+        return Registration(license=lizenz, trial=versuch, asked=bool(roh.get("asked", False)))
 
     def save(self, registration: Registration) -> None:
         """Schreibt die Ablage. Ein Fehler darf den Start nicht verhindern."""
-        daten: dict[str, object] = {}
+        daten: dict[str, object] = {"asked": registration.asked}
         if registration.license is not None:
             daten["license"] = {
                 "email": registration.license.email,
@@ -297,6 +302,9 @@ def check_registration(
         return RegistrationOutcome.QUIT
 
     if mode is RegistrationMode.FREE:
+        if stand.asked:
+            return RegistrationOutcome.CONTINUE
+        store.save(replace(stand, asked=True))
         return RegistrationOutcome.REMIND
 
     versuch = record_launch(stand.trial, jetzt) if stand.trial else start_trial(jetzt)

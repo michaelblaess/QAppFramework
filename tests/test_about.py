@@ -8,6 +8,7 @@ ueber die Hoehe, und die haengt am laengsten Quote des Pools.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -19,6 +20,12 @@ pytest.importorskip("PySide6", reason="Der Info-Dialog gehoert zur Desktop-Oberf
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton  # noqa: E402
 
 from QAppFramework.about import BREITE, AboutDialog, Quote, load_quotes  # noqa: E402
+from QAppFramework.registration import (  # noqa: E402
+    Registration,
+    RegistrationStore,
+    create_keypair,
+    sign,
+)
 from QAppFramework.theme import apply_theme  # noqa: E402
 
 PROBE = Quote(text="Ein kurzer Satz.", autor="Niemand", quelle="erfunden")
@@ -179,3 +186,76 @@ class TestAboutDialog:
         assert kurz.width() == lang.width() == BREITE
         kurz.close()
         lang.close()
+
+
+class TestRegistrierungImInfoDialog:
+    """Stand und Knopf erscheinen nur, wenn die Anwendung sie mitgibt."""
+
+    def test_ohne_ablage_bleibt_der_dialog_wie_er_war(self, app: QApplication) -> None:
+        """Eine Anwendung ohne Registrierung darf nichts davon sehen."""
+        dialog = _dialog(app)
+        assert dialog.findChild(QLabel, "AboutRegistration") is None
+        assert dialog.findChild(QPushButton, "AboutRegisterButton") is None
+        dialog.close()
+
+    def test_ohne_schluessel_steht_nicht_registriert(
+        self, app: QApplication, tmp_path: Path
+    ) -> None:
+        _, oeffentlich = create_keypair()
+        ablage = RegistrationStore(tmp_path / "r.json")
+        dialog = _dialog(app, registration_store=ablage, public_key=oeffentlich)
+        stand = dialog.findChild(QLabel, "AboutRegistration")
+        assert stand is not None
+        assert stand.text() == "Nicht registriert"
+        knopf = dialog.findChild(QPushButton, "AboutRegisterButton")
+        assert knopf is not None and knopf.isHidden() is False
+        dialog.close()
+
+    def test_mit_schluessel_steht_die_mail_da(
+        self, app: QApplication, tmp_path: Path
+    ) -> None:
+        privat, oeffentlich = create_keypair()
+        ablage = RegistrationStore(tmp_path / "r.json")
+        ablage.save(Registration(license=sign("michael@example.com", privat)))
+        dialog = _dialog(app, registration_store=ablage, public_key=oeffentlich)
+        stand = dialog.findChild(QLabel, "AboutRegistration")
+        assert stand is not None
+        assert "michael@example.com" in stand.text()
+        dialog.close()
+
+    def test_wer_registriert_ist_braucht_den_knopf_nicht(
+        self, app: QApplication, tmp_path: Path
+    ) -> None:
+        privat, oeffentlich = create_keypair()
+        ablage = RegistrationStore(tmp_path / "r.json")
+        ablage.save(Registration(license=sign("michael@example.com", privat)))
+        dialog = _dialog(app, registration_store=ablage, public_key=oeffentlich)
+        knopf = dialog.findChild(QPushButton, "AboutRegisterButton")
+        assert knopf is not None
+        assert knopf.isHidden() is True
+        dialog.close()
+
+    def test_laufender_testzeitraum_nennt_die_resttage(
+        self, app: QApplication, tmp_path: Path
+    ) -> None:
+        from datetime import UTC, datetime, timedelta
+
+        from QAppFramework.registration import TrialState
+
+        _, oeffentlich = create_keypair()
+        ablage = RegistrationStore(tmp_path / "r.json")
+        vor_zehn_tagen = datetime.now(UTC) - timedelta(days=10)
+        ablage.save(
+            Registration(
+                trial=TrialState(
+                    first_seen=vor_zehn_tagen,
+                    latest_seen=datetime.now(UTC),
+                    launches=3,
+                )
+            )
+        )
+        dialog = _dialog(app, registration_store=ablage, public_key=oeffentlich, trial_days=30)
+        stand = dialog.findChild(QLabel, "AboutRegistration")
+        assert stand is not None
+        assert "20 Tage" in stand.text()
+        dialog.close()

@@ -8,6 +8,7 @@ Enthalten:
 - about:         Info-Dialog mit Zitatpool
 - absturz:       Fehlerdialog statt wortlosem Abbruch, geordnetes Strg+C
 - registration:  Schluessel pruefen und Testzeitraum rechnen, ohne Oberflaeche
+- registration_dialog: der Dialog dazu, in drei Strengegraden
 - zelle:         Zell-Delegate mit Innenabstand und Trefferhervorhebung
 - einstellungen: Geruest fuer Einstellungsdialoge, Seiten Appearance und Speicherort
 - farbe:         Farbeingaben normalisieren
@@ -39,6 +40,7 @@ from .registration import (
     sign,
     verify,
 )
+from .registration_dialog import RegistrationDialog, ask_for_registration
 from .settings import Appearance, SettingsDialogBase
 from .texts import LANGUAGES, text
 from .theme import (
@@ -74,6 +76,8 @@ __version__ = "0.11.0"
 __author__ = "Michael Blaess"
 
 __all__ = [
+    "ask_for_registration",
+    "RegistrationDialog",
     "verify",
     "sign",
     "days_left",

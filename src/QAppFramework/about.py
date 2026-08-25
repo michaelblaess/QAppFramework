@@ -35,6 +35,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from .registration import (
+    RegistrationMode,
+    RegistrationStore,
+    days_left,
+    verify,
+)
 from .texts import pruefe_sprache, text
 
 logger = logging.getLogger(__name__)
@@ -97,6 +103,11 @@ class AboutDialog(QDialog):
         homepage_url: str | None = HOMEPAGE_URL,
         sprache: str = "de",
         zitat: Quote | None = None,
+        registration_store: RegistrationStore | None = None,
+        public_key: bytes | None = None,
+        registration_mode: RegistrationMode = RegistrationMode.FREE,
+        trial_days: int = 30,
+        benefits: tuple[str, ...] = (),
     ) -> None:
         """Baut den Dialog.
 
@@ -121,12 +132,30 @@ class AboutDialog(QDialog):
                 Zweiter Verweis. None laesst ihn weg.
             sprache:
                 'de' oder 'en' - waehlt die Sprache des Zitats.
+            registration_store:
+                Ablage der Registrierung. Nur wenn sie zusammen mit dem
+                oeffentlichen Schluessel angegeben wird, erscheinen Status
+                und Knopf - Anwendungen ohne Registrierung bleiben, wie sie
+                waren.
+            public_key:
+                Oeffentlicher Schluessel des Herausgebers.
+            registration_mode:
+                Strenge, die der Registrierungsdialog von hier aus zeigt.
+            trial_days:
+                Laenge des Testzeitraums, fuer die Restzeit-Angabe.
+            benefits:
+                Was die Registrierung bringt, fuer den Dialog.
             zitat:
                 Ein festes Quote statt eines zufaelligen. Fuer Bildschirmfotos,
                 die sonst bei jedem Lauf anders aussehen.
         """
         super().__init__(parent)
         self._sprache = pruefe_sprache(sprache)
+        self._store = registration_store
+        self._public_key = public_key
+        self._registration_mode = registration_mode
+        self._trial_days = trial_days
+        self._benefits = benefits
         self.setWindowTitle(f"{text('about.titel', self._sprache)} {app_name}")
         self.setSizeGripEnabled(True)
         self.setFixedWidth(BREITE)
@@ -147,7 +176,10 @@ class AboutDialog(QDialog):
             zeile.setObjectName("AboutFacts")
             zeile.setAlignment(Qt.AlignmentFlag.AlignCenter)
             inhalt.addWidget(zeile)
-            inhalt.addSpacing(16)
+            inhalt.addSpacing(10)
+
+        self._registrierung_anhaengen(inhalt)
+        inhalt.addSpacing(16)
 
         self._zitat_anhaengen(inhalt, zitat if zitat is not None else self._ziehe_zitat())
 
@@ -163,6 +195,74 @@ class AboutDialog(QDialog):
 
         inhalt.addSpacing(18)
         inhalt.addLayout(self._knopfzeile())
+
+    def _registrierung_anhaengen(self, auslage: QVBoxLayout) -> None:
+        """Zeigt den Stand der Registrierung und den Weg dorthin.
+
+        Ohne Ablage und Schluessel passiert nichts - eine Anwendung ohne
+        Registrierung soll den Dialog unveraendert bekommen.
+        """
+        if self._store is None or self._public_key is None:
+            return
+
+        self._stand = QLabel(self._standtext())
+        self._stand.setObjectName("AboutRegistration")
+        self._stand.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._stand.setWordWrap(True)
+        auslage.addWidget(self._stand)
+
+        self._registrieren = QPushButton(text("about.registrieren", self._sprache))
+        self._registrieren.setObjectName("AboutRegisterButton")
+        self._registrieren.clicked.connect(self._registrieren_geklickt)
+        zeile = QHBoxLayout()
+        zeile.addStretch(1)
+        zeile.addWidget(self._registrieren)
+        zeile.addStretch(1)
+        auslage.addSpacing(8)
+        auslage.addLayout(zeile)
+        self._knopf_nachfuehren()
+
+    def _standtext(self) -> str:
+        """Registriert, im Testzeitraum, oder noch gar nichts."""
+        if self._store is None or self._public_key is None:
+            return ""
+        stand = self._store.load()
+        if verify(stand.license, self._public_key):
+            mail = stand.license.email if stand.license else ""
+            return text("about.registriert", self._sprache).format(mail=mail)
+        rest = days_left(self._store, days=self._trial_days)
+        if rest is not None:
+            if rest <= 0:
+                return text("about.testzeit_abgelaufen", self._sprache)
+            return text("about.testzeit", self._sprache).format(tage=rest)
+        return text("about.nicht_registriert", self._sprache)
+
+    def _knopf_nachfuehren(self) -> None:
+        """Wer registriert ist, braucht den Knopf nicht mehr."""
+        if self._store is None or self._public_key is None:
+            return
+        schon = verify(self._store.load().license, self._public_key)
+        self._registrieren.setVisible(not schon)
+
+    def _registrieren_geklickt(self) -> None:
+        """Oeffnet den Registrierungsdialog und fuehrt die Anzeige nach."""
+        # Erst hier importiert: der Info-Dialog soll ohne den
+        # Registrierungsdialog benutzbar bleiben.
+        from .registration_dialog import ask_for_registration
+
+        if self._store is None or self._public_key is None:
+            return
+        ask_for_registration(
+            self._store,
+            self._public_key,
+            mode=self._registration_mode,
+            days_left=days_left(self._store, days=self._trial_days),
+            benefits=self._benefits,
+            sprache=self._sprache,
+            parent=self,
+        )
+        self._stand.setText(self._standtext())
+        self._knopf_nachfuehren()
 
     def showEvent(self, event: QShowEvent) -> None:  # noqa: N802 - Qt-Schreibweise
         """Gibt den umbrechenden Beschriftungen die Hoehe, die ihr Text braucht.

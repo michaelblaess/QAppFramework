@@ -412,6 +412,16 @@ def build_stylesheet(p: Colors) -> str:
     /* Die Versionsmarke in Festbreitenschrift. Nur echte Familien nennen -
        ein Gattungsname wie "monospace" ist in Qt keine Familie und ergibt
        Kaestchen. */
+    #AboutRegistration {{ color: {p.text_secondary}; font-size: 12px; }}
+    #AboutRegisterButton {{ padding: 5px 18px; }}
+    #RegistrationTitle {{ font-size: 17px; font-weight: 600; color: {p.text_primary}; }}
+    #RegistrationSubtitle {{ color: {p.text_secondary}; }}
+    #RegistrationBenefits {{ color: {p.text_secondary}; padding: 8px 12px;
+        background-color: {p.accent_subtle}; border-radius: {RADIUS_SM}px; }}
+    #RegistrationStatus {{ font-weight: 500; padding: 2px 0; }}
+    #RegistrationStatus[zustand="gut"] {{ color: {p.green}; }}
+    #RegistrationStatus[zustand="schlecht"] {{ color: {p.red}; }}
+    #RegistrationKey {{ font-size: 12px; }}
     #AboutBadge {{ background-color: {p.accent}; color: #ffffff;
                    font-family: Consolas, Menlo, "DejaVu Sans Mono";
                    font-size: 12px; font-weight: 700;

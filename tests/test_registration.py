@@ -200,3 +200,42 @@ class TestAblauf:
 
     def test_ohne_testzeitraum_keine_restzeit(self, ablage: RegistrationStore) -> None:
         assert days_left(ablage, days=30, now=JETZT) is None
+
+
+class TestModusVerhalten:
+    """Die drei Modi unterscheiden sich darin, WIE OFT gefragt wird."""
+
+    def test_frei_fragt_genau_einmal(self, ablage: RegistrationStore) -> None:
+        """Beim ersten Start ein Hinweis, danach Ruhe.
+
+        Eine zweite Nachfrage waere keine Erinnerung mehr, sondern
+        Belaestigung - und der schnellste Weg, dass jemand die Anwendung
+        wieder loescht.
+        """
+        _, oeffentlich = create_keypair()
+        assert check(ablage, oeffentlich, mode=Mode.FREE, now=JETZT) is Outcome.REMIND
+        for _ in range(5):
+            assert check(ablage, oeffentlich, mode=Mode.FREE, now=JETZT) is Outcome.CONTINUE
+
+    def test_testzeitraum_fragt_bei_jedem_start(self, ablage: RegistrationStore) -> None:
+        """Wegklickbar, aber jedes Mal da - solange die Frist laeuft."""
+        _, oeffentlich = create_keypair()
+        for tag in range(5):
+            zeit = JETZT + timedelta(days=tag)
+            assert check(ablage, oeffentlich, mode=Mode.TRIAL, now=zeit) is Outcome.REMIND
+
+    def test_pflicht_fragt_bei_jedem_start_und_laesst_nicht_durch(
+        self, ablage: RegistrationStore
+    ) -> None:
+        _, oeffentlich = create_keypair()
+        for _ in range(3):
+            assert check(ablage, oeffentlich, mode=Mode.REQUIRED, now=JETZT) is Outcome.QUIT
+
+    def test_nach_der_registrierung_fragt_keiner_mehr(
+        self, ablage: RegistrationStore, schluessel: tuple[bytes, bytes]
+    ) -> None:
+        privat, oeffentlich = schluessel
+        check(ablage, oeffentlich, mode=Mode.TRIAL, now=JETZT)
+        stand = ablage.load()
+        ablage.save(Registration(license=sign("michael@example.com", privat), trial=stand.trial))
+        assert check(ablage, oeffentlich, mode=Mode.TRIAL, now=JETZT) is Outcome.CONTINUE
