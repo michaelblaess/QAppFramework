@@ -24,7 +24,7 @@ wandert erst hierher, wenn ihn die zweite Anwendung ebenfalls verwendet.
 
 from .about import AboutDialog, Quote, load_quotes
 from .cell import CELL_PADDING_RIGHT, CellDelegate
-from .color import is_light, normalize
+from .color import contrast_ratio, is_light, normalize, relative_luminance
 from .crash import ErrorDialog, build_report, install_error_handler, install_interrupt_handler
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .icons import GLYPHS, load_icon
@@ -122,12 +122,14 @@ __all__ = [
     "install_error_handler",
     "colors",
     "is_dark",
+    "contrast_ratio",
     "is_light",
     "load_icon",
     "load_quotes",
     "mode",
     "next_zoom",
     "normalize",
+    "relative_luminance",
     "set_accent",
     "set_mode",
     "set_zoom",

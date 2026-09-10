@@ -49,16 +49,27 @@ class Colors:
 # Werte woertlich aus jira-timesheet-qt. Reihenfolge der Flaechen nach
 # Helligkeit: bg_primary (Fenster) - bg_secondary (Panels) - bg_tertiary
 # (Tabelle) - bg_elevated (Schaltflaechen).
+#
+# border, border_hover und text_tertiary sind am 10.09.2026 angehoben worden.
+# Gemessen wurde gegen JEDEN der vier Flaechentoene, nicht nur gegen
+# bg_primary: beide Farben grenzen laut Stylesheet auch an bg_secondary und
+# bg_elevated, und dort war der Kontrast am schlechtesten. Vorher verfehlten
+# in beiden Erscheinungsbildern der Hilfstext (2,77 dunkel / 2,70 hell gegen
+# das Ziel 3,0) und die Trennlinie (1,20 / 1,24 gegen 1,4) ihr Ziel.
+# border_hover ist mitgewandert, damit der Hover-Zustand seinen Abstand zur
+# ruhenden Linie behaelt - ohne das schrumpfte er im Dunkelmodus von 30 auf
+# 12 und waere kaum noch zu sehen. Die Werte sind die kleinstmoeglichen, die
+# das Ziel auf jedem Untergrund erreichen. Ein Test haelt das fest.
 DARK = Colors(
     bg_primary="#1f2226",
     bg_secondary="#23262b",
     bg_tertiary="#26292e",
     bg_elevated="#2f333a",
-    border="#3a3f47",
-    border_hover="#4a505a",
+    border="#454951",
+    border_hover="#575a62",
     text_primary="#e2e5ea",
     text_secondary="#9aa2ad",
-    text_tertiary="#6f7680",
+    text_tertiary="#757c85",
     accent="#ff922b",
     accent_hover="#ffa94d",
     accent_subtle="rgba(255, 146, 43, 0.20)",
@@ -73,11 +84,11 @@ LIGHT = Colors(
     bg_secondary="#f0f1f4",
     bg_tertiary="#ffffff",
     bg_elevated="#eceef1",
-    border="#d3d7dd",
-    border_hover="#b9bec6",
+    border="#c7cbd1",
+    border_hover="#afb2b8",
     text_primary="#1c1f24",
     text_secondary="#5f6773",
-    text_tertiary="#8b929e",
+    text_tertiary="#838995",
     accent="#e8590c",
     accent_hover="#fd7e14",
     accent_subtle="rgba(232, 89, 12, 0.14)",

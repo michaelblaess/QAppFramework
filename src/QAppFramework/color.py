@@ -54,3 +54,47 @@ def is_light(hexwert: str) -> bool:
     roh = normalize(hexwert)
     rot, gruen, blau = (int(roh[i : i + 2], 16) for i in (0, 2, 4))
     return (0.299 * rot + 0.587 * gruen + 0.114 * blau) > 150
+
+
+def relative_luminance(hexwert: str) -> float:
+    """Die relative Leuchtdichte nach WCAG 2.1.
+
+    Bewusst nicht dieselbe Formel wie `is_light`: die dort verwendete
+    YIQ-Naeherung rechnet auf den rohen Kanalwerten. WCAG entzerrt sie
+    vorher (Gamma), und nur damit ergibt das Kontrastverhaeltnis die
+    Zahlen, gegen die Barrierefreiheitsvorgaben formuliert sind.
+
+    Args:
+        hexwert:
+            Die Farbe in einer der von `normalize` verstandenen Formen.
+
+    Returns:
+        Ein Wert zwischen 0 (Schwarz) und 1 (Weiß).
+    """
+    roh = normalize(hexwert)
+    kanaele = []
+    for stelle in (0, 2, 4):
+        anteil = int(roh[stelle : stelle + 2], 16) / 255
+        kanaele.append(anteil / 12.92 if anteil <= 0.04045 else ((anteil + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * kanaele[0] + 0.7152 * kanaele[1] + 0.0722 * kanaele[2]
+
+
+def contrast_ratio(vorne: str, hinten: str) -> float:
+    """Das Kontrastverhaeltnis zweier Farben nach WCAG 2.1.
+
+    Die Schwellen, gegen die man das misst: 4.5 für Fließtext, 3.0 für große
+    Schrift und grafische Elemente. Eine reine Trennlinie muss sich nur
+    absetzen, dort genügt weniger.
+
+    Args:
+        vorne:
+            Die Farbe im Vordergrund - Schrift, Linie, Sinnbild.
+        hinten:
+            Die Fläche darunter.
+
+    Returns:
+        Ein Wert zwischen 1.0 (nicht zu unterscheiden) und 21.0 (Schwarz
+        auf Weiß). Die Reihenfolge der Argumente ändert das Ergebnis nicht.
+    """
+    hell, dunkel = sorted((relative_luminance(vorne), relative_luminance(hinten)), reverse=True)
+    return (hell + 0.05) / (dunkel + 0.05)
