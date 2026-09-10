@@ -33,6 +33,10 @@ GLYPHS: dict[str, str] = {
     "suchen": "mdi6.magnify",
     "bericht": "mdi6.file-document-outline",
     "erscheinungsbild": "mdi6.theme-light-dark",
+    # Beim Durchschalten der Farbschemata. Zwei verschiedene Glyphen, weil
+    # dieselbe Palette fuer beide Richtungen nichts unterscheidet.
+    "farbschema_weiter": "mdi6.palette-advanced",
+    "farbschema_zurueck": "mdi6.palette-outline",
 }
 
 
