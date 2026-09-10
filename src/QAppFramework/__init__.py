@@ -26,6 +26,7 @@ from .about import AboutDialog, Quote, load_quotes
 from .cell import CELL_PADDING_RIGHT, CellDelegate
 from .color import contrast_ratio, is_light, normalize, relative_luminance
 from .crash import ErrorDialog, build_report, install_error_handler, install_interrupt_handler
+from .derive import available_themes
 from .disclaimer import DISCLAIMER_VERSION, LIABILITY, DisclaimerDialog, DisclaimerStore
 from .icons import GLYPHS, load_icon
 from .registration import (
@@ -59,12 +60,14 @@ from .theme import (
     build_palette,
     build_stylesheet,
     colors,
+    current_theme,
     is_dark,
     mode,
     next_zoom,
     scale,
     set_accent,
     set_mode,
+    set_theme,
     set_zoom,
     system_is_dark,
     toggle,
@@ -130,8 +133,11 @@ __all__ = [
     "next_zoom",
     "normalize",
     "relative_luminance",
+    "available_themes",
     "set_accent",
     "set_mode",
+    "current_theme",
+    "set_theme",
     "set_zoom",
     "scale",
     "system_is_dark",

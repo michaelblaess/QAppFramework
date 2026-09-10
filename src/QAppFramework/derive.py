@@ -1,0 +1,196 @@
+"""Baut aus einem Terminal-Theme eine vollstaendige Qt-Palette.
+
+Ein Theme aus `textual-themes` traegt elf Grundfarben, `Colors` hat sechzehn
+Felder. Fuenf davon werden hier abgeleitet, und zwar nach Anteilen, die aus
+der Bestandspalette dieser Bibliothek zurueckgerechnet wurden - nicht nach
+Gefuehl. Die Messung steht im Skill `qt-specialist`.
+
+Der Ablauf hat zwei Stufen, und die zweite ist die wichtige:
+
+1. Die Rohableitung mischt jede abgeleitete Farbe aus Grund und Schrift.
+2. Danach wird jede Rolle auf ihr Kontrastziel gehoben - gegen JEDEN der
+   vier Flaechentoene, nicht nur gegen den Fenstergrund.
+
+Ohne Stufe 2 sieht ein Theme auf dem Fenstergrund gut aus und faellt
+ueberall dort auseinander, wo eine andere Flaeche darunter liegt. Genau das
+war am ersten Versuch zu sehen: der Fliesstext trug, die inaktiven Reiter
+auf `bg_secondary` blieben blass.
+
+Public API:
+    - `colors_from_palette()` - die Umrechnung.
+    - `available_themes()` - Name und Anzeigename aller Themes.
+    - `palette_for_theme()` - ein Theme ueber seinen Namen.
+
+Dieses Modul haengt an den **Daten** von textual-themes, nicht an Textual.
+Das Extra wird bewusst nicht gezogen (siehe pyproject.toml).
+"""
+
+from __future__ import annotations
+
+from textual_themes.palettes import (
+    DISPLAY_NAMES,
+    PALETTES_BY_NAME,
+    RETRO_PALETTES,
+    Palette,
+)
+
+from .color import blend, ensure_contrast_on_all
+
+# ── Die Mischanteile ──────────────────────────────────────────────────
+#
+# Zurueckgerechnet aus DARK und LIGHT: fuer jedes Feld der Anteil, der
+# blend(Grund, Schrift, a) am naechsten an den Bestandswert bringt. Die
+# Bestandspalette ist damit fast vollstaendig beschreibbar - groesster
+# Restfehler 11 auf einer Skala bis 441.
+#
+# Je Erscheinungsbild getrennt, weil die Flaechentreppe sich unterscheidet:
+# im Dunkelmodus steigt sie monoton, im Hellmodus ist die Tabelle
+# Papierweiss und damit heller als der Fenstergrund, waehrend Panels und
+# Schaltflaechen dunkler sind.
+ANTEILE_DUNKEL: dict[str, float] = {
+    "bg_secondary": 0.023,
+    "bg_tertiary": 0.034,
+    "bg_elevated": 0.090,
+    "border": 0.151,
+    "border_hover": 0.243,
+    "text_secondary": 0.656,
+    "text_tertiary": 0.432,
+}
+ANTEILE_HELL: dict[str, float] = {
+    "bg_secondary": 0.017,
+    "bg_elevated": 0.035,
+    "border": 0.138,
+    "border_hover": 0.253,
+    "text_secondary": 0.660,
+    "text_tertiary": 0.457,
+}
+
+# Im Hellmodus setzt sich die Arbeitsflaeche nach oben ab statt nach unten.
+# 0.35 statt 1.0, damit ein Elfenbein-Theme nicht auf reines Weiss springt
+# und seinen Charakter verliert.
+HELL_TABELLE_AUFHELLUNG = 0.35
+
+# ── Die Kontrastziele ─────────────────────────────────────────────────
+#
+# Dieselben Werte, gegen die `TestKontrast` die Bestandspalette prueft.
+# 4.5 ist die WCAG-Schwelle fuer Fliesstext, 3.0 fuer grosse Schrift und
+# grafische Elemente. 1.4 fuer die Linien ist keine WCAG-Zahl, sondern die
+# Schwelle, ab der eine Trennlinie auf allen vier Flaechen sichtbar bleibt.
+ZIELE: dict[str, float] = {
+    "text_secondary": 4.5,
+    "text_tertiary": 3.0,
+    "accent": 3.0,
+    "border": 1.4,
+    "border_hover": 1.4,
+}
+
+# Der Hover-Ton soll ueber der ruhenden Linie liegen, nicht daneben.
+BORDER_HOVER_ZIEL_AUFSCHLAG = 0.4
+
+
+def _rgba(hexwert: str, deckkraft: float) -> str:
+    """Baut den rgba()-Ausdruck, den Qt im Stylesheet erwartet."""
+    roh = hexwert.lstrip("#")
+    rot, gruen, blau = (int(roh[i : i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({rot}, {gruen}, {blau}, {deckkraft:.2f})"
+
+
+def colors_from_palette(palette: Palette) -> dict[str, str]:
+    """Rechnet die elf Grundfarben eines Themes in die sechzehn Qt-Felder um.
+
+    Args:
+        palette:
+            Die Grundfarben aus `textual-themes`.
+
+    Returns:
+        Die Feldwerte als Abbildung, passend fuer `Colors(**werte)`. Bewusst
+        ein Dict und keine `Colors`-Instanz: so bleibt dieses Modul frei von
+        `theme.py` und damit von PySide6, und es laesst sich ohne Qt testen.
+    """
+    anteile = ANTEILE_DUNKEL if palette.dark else ANTEILE_HELL
+    grund = palette.background
+    schrift = palette.foreground
+
+    # Stufe 1 - die Flaechen. Sie sind der Bezug fuer alles Weitere und
+    # werden deshalb nicht nachtraeglich veraendert.
+    bg_primary = grund
+    bg_secondary = blend(grund, schrift, anteile["bg_secondary"])
+    bg_elevated = blend(grund, schrift, anteile["bg_elevated"])
+    if palette.dark:
+        bg_tertiary = blend(grund, schrift, anteile["bg_tertiary"])
+    else:
+        bg_tertiary = blend(grund, "#FFFFFF", HELL_TABELLE_AUFHELLUNG)
+
+    flaechen = (bg_primary, bg_secondary, bg_tertiary, bg_elevated)
+
+    # Stufe 2 - jede Rolle auf ihr Ziel heben, gegen alle vier Flaechen.
+    def gehoben(feld: str, roh: str, ziel: float | None = None) -> str:
+        return ensure_contrast_on_all(roh, flaechen, ZIELE[feld] if ziel is None else ziel)
+
+    border = gehoben("border", blend(grund, schrift, anteile["border"]))
+    border_hover = gehoben(
+        "border_hover",
+        blend(grund, schrift, anteile["border_hover"]),
+        ZIELE["border_hover"] + BORDER_HOVER_ZIEL_AUFSCHLAG,
+    )
+
+    accent = gehoben("accent", palette.accent)
+    # Der Hover-Ton des Akzents geht zur Schrift hin und nicht pauschal ins
+    # Helle - sonst kippt ein heller Akzent auf hellem Grund ins Unsichtbare.
+    accent_hover = gehoben("accent", blend(accent, schrift, 0.25))
+
+    return {
+        "bg_primary": bg_primary,
+        "bg_secondary": bg_secondary,
+        "bg_tertiary": bg_tertiary,
+        "bg_elevated": bg_elevated,
+        "border": border,
+        "border_hover": border_hover,
+        "text_primary": schrift,
+        "text_secondary": gehoben("text_secondary", blend(grund, schrift, anteile["text_secondary"])),
+        "text_tertiary": gehoben("text_tertiary", blend(grund, schrift, anteile["text_tertiary"])),
+        "accent": accent,
+        "accent_hover": accent_hover,
+        "accent_subtle": _rgba(accent, 0.20 if palette.dark else 0.14),
+        # Die Statusfarben kommen unveraendert aus dem Theme. Sie stehen in
+        # Tabellenzellen auf wechselndem Grund, und ein Theme, das Rot und
+        # Gruen bewusst gedaempft haelt, soll das behalten duerfen.
+        "green": palette.success,
+        "orange": palette.warning,
+        "red": palette.error,
+        "purple": palette.secondary,
+    }
+
+
+def available_themes() -> dict[str, str]:
+    """Alle waehlbaren Themes.
+
+    Returns:
+        Je Theme-Name der Anzeigename, alphabetisch nach Anzeigename. Der
+        Schluessel steht in der Einstellungsdatei und aendert sich nicht.
+    """
+    return dict(sorted(DISPLAY_NAMES.items(), key=lambda paar: paar[1].lower()))
+
+
+def palette_for_theme(name: str) -> Palette | None:
+    """Sucht ein Theme ueber seinen Namen.
+
+    Args:
+        name:
+            Der Theme-Name, wie er in der Einstellungsdatei steht.
+
+    Returns:
+        Die Palette, oder None bei einem unbekannten Namen. Kein Fehler:
+        eine Einstellungsdatei kann aus einer aelteren Fassung stammen, und
+        dann ist der Rueckfall auf die Standardpalette richtig.
+    """
+    return PALETTES_BY_NAME.get(name)
+
+
+__all__ = [
+    "RETRO_PALETTES",
+    "Palette",
+    "available_themes",
+    "colors_from_palette",
+    "palette_for_theme",
+]

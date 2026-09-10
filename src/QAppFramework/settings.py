@@ -60,6 +60,7 @@ from PySide6.QtWidgets import (
 )
 
 from .color import is_light, normalize
+from .derive import available_themes
 from .texts import pruefe_sprache, text
 from .theme import (
     DEFAULT_ACCENT,
@@ -68,6 +69,7 @@ from .theme import (
     Mode,
     accent,
     accent_names,
+    current_theme,
     mode,
     zoom,
 )
@@ -86,18 +88,27 @@ MINDESTHOEHE = 520
 class Appearance:
     """Was die Darstellungs-Seite einstellt.
 
-    Die Anwendung speichert diese drei Werte, wie sie will - die Bibliothek
-    liest sie nur beim Oeffnen und gibt sie beim Speichern zurueck.
+    Die Anwendung speichert diese Werte, wie sie will - die Bibliothek liest
+    sie nur beim Oeffnen und gibt sie beim Speichern zurueck.
+
+    Attributes:
+        mode: Hell, dunkel oder wie das Betriebssystem.
+        accent: Schluessel der Akzentfarbe.
+        zoom: Vergroesserung der Oberflaeche in Prozent.
+        theme: Name eines Retro-Themes, oder "" fuer die Grundpalette. Ist
+            eines gesetzt, bestimmt es die Farben vollstaendig - `mode` und
+            `accent` bleiben gespeichert, wirken aber nicht.
     """
 
     mode: Mode = Mode.SYSTEM
     accent: str = DEFAULT_ACCENT
     zoom: int = DEFAULT_ZOOM
+    theme: str = ""
 
     @classmethod
     def aktuell(cls) -> Appearance:
         """Nimmt den Stand, der gerade gilt - fuer Anwendungen ohne eigene Ablage."""
-        return cls(mode=mode(), accent=accent(), zoom=zoom())
+        return cls(mode=mode(), accent=accent(), zoom=zoom(), theme=current_theme())
 
 
 class SettingsDialogBase(QDialog):
@@ -340,6 +351,16 @@ class SettingsDialogBase(QDialog):
         self._feld_akzent.setCurrentIndex(max(0, self._feld_akzent.findData(self._darstellung.accent)))
         formular.addRow(self.beschriftung(text("einstellungen.akzentfarbe", self._sprache)), self._feld_akzent)
 
+        # Das Theme steht NACH Erscheinungsbild und Akzent, weil es beide
+        # aussticht: waehlt jemand eines, bringt es Hell/Dunkel und seinen
+        # eigenen Akzent mit. Der Hinweis darunter sagt das.
+        self._feld_theme = self.auswahl()
+        self._feld_theme.addItem(text("einstellungen.theme_standard", self._sprache), "")
+        for schluessel, anzeige in available_themes().items():
+            self._feld_theme.addItem(anzeige, schluessel)
+        self._feld_theme.setCurrentIndex(max(0, self._feld_theme.findData(self._darstellung.theme)))
+        formular.addRow(self.beschriftung(text("einstellungen.theme", self._sprache)), self._feld_theme)
+
         self._feld_zoom = self.auswahl()
         for stufe in ZOOM_LEVELS:
             self._feld_zoom.addItem(f"{stufe} %", stufe)
@@ -388,6 +409,7 @@ class SettingsDialogBase(QDialog):
             mode=Mode(str(self._feld_modus.currentData())),
             accent=str(self._feld_akzent.currentData()),
             zoom=int(self._feld_zoom.currentData()),
+            theme=str(self._feld_theme.currentData()),
         )
         self.uebernehmen()
         self.accept()

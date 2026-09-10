@@ -58,11 +58,11 @@ TEXTE: dict[str, dict[str, str]] = {
     "registrierung.titel": {"de": "Registrierung", "en": "Registration"},
     "registrierung.freiwillig": {
         "de": "Diese Anwendung lässt sich uneingeschränkt nutzen. Wer sich registriert, "
-              "bekommt zusätzliche Funktionen und wird über neue Versionen informiert. "
-              "Diese Frage erscheint nur dieses eine Mal.",
+        "bekommt zusätzliche Funktionen und wird über neue Versionen informiert. "
+        "Diese Frage erscheint nur dieses eine Mal.",
         "en": "This application is fully usable as is. Registering unlocks additional "
-              "features and keeps you informed about new versions. You will only be asked "
-              "this once.",
+        "features and keeps you informed about new versions. You will only be asked "
+        "this once.",
     },
     "registrierung.testzeit": {
         "de": "Der Testzeitraum läuft noch {tage} Tage. Danach wird ein Schlüssel benötigt.",
@@ -104,10 +104,14 @@ TEXTE: dict[str, dict[str, str]] = {
     "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},
     "einstellungen.akzentfarbe": {"de": "Akzentfarbe", "en": "Accent colour"},
+    "einstellungen.theme": {"de": "Farbschema", "en": "Colour scheme"},
+    # Der erste Eintrag der Liste. "Standard" statt "kein Theme" - die
+    # Grundpalette ist eine Wahl wie jede andere, keine Leerstelle.
+    "einstellungen.theme_standard": {"de": "Standard", "en": "Standard"},
     "einstellungen.zoom": {"de": "Zoom", "en": "Zoom"},
     "einstellungen.sofort": {
-        "de": "Ein Wechsel wirkt sofort, ohne Neustart.",
-        "en": "Changes take effect at once, no restart needed.",
+        "de": "Ein Wechsel wirkt sofort, ohne Neustart. Ein Farbschema bringt Erscheinungsbild und Akzentfarbe mit.",
+        "en": "Changes take effect at once, no restart needed. A colour scheme brings its own appearance and accent.",
     },
     "einstellungen.speicherort": {"de": "Speicherort", "en": "Storage"},
     "einstellungen.oeffnen": {"de": "Öffnen", "en": "Open"},

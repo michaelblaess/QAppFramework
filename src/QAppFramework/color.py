@@ -8,6 +8,7 @@ gibt es hier immer einen brauchbaren Wert zurueck, notfalls den Rueckfall.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 
 STANDARDFARBE = "FF0000"
 
@@ -54,6 +55,104 @@ def is_light(hexwert: str) -> bool:
     roh = normalize(hexwert)
     rot, gruen, blau = (int(roh[i : i + 2], 16) for i in (0, 2, 4))
     return (0.299 * rot + 0.587 * gruen + 0.114 * blau) > 150
+
+
+def blend(grund: str, zumischung: str, anteil: float) -> str:
+    """Mischt zwei Farben.
+
+    Args:
+        grund:
+            Die Ausgangsfarbe.
+        zumischung:
+            Was hineingemischt wird.
+        anteil:
+            Wie viel davon, zwischen 0 und 1. Werte ausserhalb werden
+            begrenzt, damit ein Rechenfehler an anderer Stelle nicht in
+            eine unsinnige Farbe muendet.
+
+    Returns:
+        Die Mischfarbe als '#RRGGBB'.
+    """
+    gewicht = max(0.0, min(1.0, anteil))
+    a = normalize(grund)
+    b = normalize(zumischung)
+    kanaele = []
+    for stelle in (0, 2, 4):
+        von = int(a[stelle : stelle + 2], 16)
+        nach = int(b[stelle : stelle + 2], 16)
+        kanaele.append(round(von + (nach - von) * gewicht))
+    return "#" + "".join(f"{max(0, min(255, k)):02X}" for k in kanaele)
+
+
+def ensure_contrast(farbe: str, hintergrund: str, ziel: float, *, schritte: int = 24) -> str:
+    """Hellt eine Farbe auf oder dunkelt sie ab, bis sie ihr Ziel erreicht.
+
+    Die Richtung ergibt sich aus dem Hintergrund: auf dunklem Grund wird zu
+    Weiss hin gemischt, auf hellem zu Schwarz. Erreicht die Farbe ihr Ziel
+    schon, bleibt sie unveraendert - das ist der Normalfall und der Grund,
+    warum ein Theme seinen Charakter behaelt.
+
+    Args:
+        farbe:
+            Die gewuenschte Farbe.
+        hintergrund:
+            Die Flaeche, auf der sie steht.
+        ziel:
+            Das Mindestkontrastverhaeltnis.
+        schritte:
+            Wie fein gesucht wird. Mehr Schritte heisst eine Farbe, die
+            naeher am Original liegt.
+
+    Returns:
+        Die naechstgelegene Farbe, die das Ziel erreicht. Ist es auch mit
+        reinem Weiss oder Schwarz nicht zu erreichen, kommt dieses zurueck -
+        besser der bestmoegliche Kontrast als der zu schwache Ausgangswert.
+    """
+    if contrast_ratio(farbe, hintergrund) >= ziel:
+        return f"#{normalize(farbe)}"
+
+    pol = "#FFFFFF" if relative_luminance(hintergrund) < 0.5 else "#000000"
+    for schritt in range(1, schritte + 1):
+        kandidat = blend(farbe, pol, schritt / schritte)
+        if contrast_ratio(kandidat, hintergrund) >= ziel:
+            return kandidat
+    return pol
+
+
+def ensure_contrast_on_all(farbe: str, hintergruende: Sequence[str], ziel: float) -> str:
+    """Wie `ensure_contrast`, aber gegen mehrere Flaechen zugleich.
+
+    Der Regelfall in einer Oberflaeche: derselbe Text steht mal auf dem
+    Fenstergrund, mal auf einer Karte, mal auf einer Schaltflaeche. Wer nur
+    gegen den Fenstergrund prueft, bekommt eine falsche Entwarnung - genau
+    daran lag der Kontrastmangel, der bis zum 10.09.2026 in dieser
+    Bibliothek stand.
+
+    Args:
+        farbe:
+            Die gewuenschte Farbe.
+        hintergruende:
+            Alle Flaechen, auf denen sie vorkommen kann.
+        ziel:
+            Das Mindestkontrastverhaeltnis, das auf JEDER gelten soll.
+
+    Returns:
+        Die Farbe, angehoben bis sie ihr Ziel auf der unguenstigsten
+        Flaeche erreicht.
+    """
+    if not hintergruende:
+        return f"#{normalize(farbe)}"
+
+    ergebnis = f"#{normalize(farbe)}"
+    # Nacheinander gegen jede Flaeche heben und das Ergebnis weiterreichen:
+    # eine Anhebung fuer die eine Flaeche kann den Kontrast zu einer anderen
+    # senken, deshalb am Ende noch eine Runde zur Kontrolle.
+    for _ in range(2):
+        for grund in hintergruende:
+            ergebnis = ensure_contrast(ergebnis, grund, ziel)
+        if min(contrast_ratio(ergebnis, g) for g in hintergruende) >= ziel:
+            break
+    return ergebnis
 
 
 def relative_luminance(hexwert: str) -> float:

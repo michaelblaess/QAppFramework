@@ -21,6 +21,7 @@ from enum import StrEnum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QGuiApplication, QPalette
 
+from .derive import colors_from_palette, palette_for_theme
 from .texts import text as _text
 
 
@@ -161,16 +162,49 @@ DEFAULT_ACCENT = "orange"
 ZOOM_LEVELS: tuple[int, ...] = (80, 90, 100, 110, 125, 150, 175, 200)
 DEFAULT_ZOOM = 100
 
-# Erscheinungsbild, Akzentfarbe und Zoom gelten fuer die ganze Anwendung - genau wie
-# das Stylesheet, an dem sie haengen. Deshalb Modulzustand und kein Wert, der
-# durch jeden Aufruf gereicht werden muesste.
+# Erscheinungsbild, Akzentfarbe, Zoom und Theme gelten fuer die ganze Anwendung -
+# genau wie das Stylesheet, an dem sie haengen. Deshalb Modulzustand und kein Wert,
+# der durch jeden Aufruf gereicht werden muesste.
 _modus: Mode = Mode.SYSTEM
 _akzent: str = DEFAULT_ACCENT
 _zoom: int = DEFAULT_ZOOM
 
+# Leer heisst: die Grundpalette dieser Bibliothek, gesteuert ueber Modus und
+# Akzent. Ein Name daraus heisst: das Retro-Theme bestimmt alles.
+_theme: str = ""
+
+
+def set_theme(name: str) -> None:
+    """Waehlt ein Retro-Theme, oder mit leerem Namen die Grundpalette.
+
+    Ein unbekannter Name faellt still auf die Grundpalette zurueck - eine
+    Einstellungsdatei kann aus einer aelteren Fassung stammen, und dafuer
+    soll die Anwendung nicht abbrechen.
+
+    Args:
+        name:
+            Der Theme-Name, oder "" fuer die Grundpalette.
+    """
+    global _theme
+    _theme = name if name and palette_for_theme(name) is not None else ""
+
+
+def current_theme() -> str:
+    """Der Name des aktiven Retro-Themes, oder "" bei der Grundpalette.
+
+    Heisst nicht `theme()`, weil dieses Paket ein Modul `theme` hat und ein
+    gleichnamiger Export es verdecken wuerde - `from QAppFramework import
+    theme` bekaeme dann die Funktion statt des Moduls.
+    """
+    return _theme
+
 
 def set_mode(wert: Mode | str) -> None:
-    """Setzt das Erscheinungsbild. Unbekannte Angaben ergeben SYSTEM."""
+    """Setzt das Erscheinungsbild. Unbekannte Angaben ergeben SYSTEM.
+
+    Solange ein Theme gewaehlt ist, bleibt das ohne Wirkung: ein Theme ist
+    entweder hell oder dunkel und bringt das mit.
+    """
     global _modus
     try:
         _modus = Mode(wert)
@@ -254,15 +288,25 @@ def is_dark() -> bool:
 def colors(dunkel: bool | None = None) -> Colors:
     """Die Farbwerte des aktuellen Erscheinungsbilds, mit der aktiven Akzentfarbe.
 
+    Ist ein Retro-Theme gewaehlt, kommt alles von dort - auch die
+    Akzentfarbe und die Frage, ob es hell oder dunkel ist. Ein Theme ist ein
+    abgestimmter Satz, und ein fremder Akzent darin nimmt ihm genau das, was
+    ihn ausmacht.
+
     Args:
         dunkel:
             Erzwingt hell oder dunkel. Ohne Angabe gilt das eingestellte
-            Erscheinungsbild.
+            Erscheinungsbild. **Wirkungslos, solange ein Theme gewaehlt ist** -
+            ein Theme bringt sein Erscheinungsbild mit.
 
     Returns:
-        Die Colors. Die drei Akzentwerte stammen aus der gewaehlten
+        Die Colors. Ohne Theme: die drei Akzentwerte aus der gewaehlten
         Akzentfarbe, alles uebrige aus der Grundpalette.
     """
+    palette = palette_for_theme(_theme) if _theme else None
+    if palette is not None:
+        return Colors(**colors_from_palette(palette))
+
     ist_dunkles_bild = is_dark() if dunkel is None else dunkel
     grund = DARK if ist_dunkles_bild else LIGHT
     ton = ACCENTS.get(_akzent, ACCENTS[DEFAULT_ACCENT])[0 if ist_dunkles_bild else 1]
