@@ -179,9 +179,19 @@ _modus: Mode = Mode.SYSTEM
 _akzent: str = DEFAULT_ACCENT
 _zoom: int = DEFAULT_ZOOM
 
-# Leer heisst: die Grundpalette dieser Bibliothek, gesteuert ueber Modus und
-# Akzent. Ein Name daraus heisst: das Retro-Theme bestimmt alles.
+# Der Name des zuletzt gewaehlten Themes. Bleibt auch stehen, wenn die
+# Themes abgeschaltet werden - wer sie wieder einschaltet, macht dort
+# weiter, wo er war.
 _theme: str = ""
+
+# Ob die Themes ueberhaupt gelten. Aus heisst: Grundpalette, gesteuert
+# ueber Erscheinungsbild und Akzentfarbe, wie es immer war. An heisst: das
+# Theme bestimmt alles, und die beiden anderen Einstellungen ruhen.
+#
+# Bewusst ein eigener Schalter und nicht "_theme ist leer": ein Anwender,
+# der mit Themes nichts anfangen kann, soll in den Einstellungen gar nicht
+# erst darueber stolpern.
+_themes_aktiv: bool = False
 
 
 def set_theme(name: str) -> None:
@@ -197,6 +207,24 @@ def set_theme(name: str) -> None:
     """
     global _theme
     _theme = name if name and palette_for_theme(name) is not None else ""
+
+
+def set_themes_enabled(aktiv: bool) -> None:
+    """Schaltet die Themes ein oder aus.
+
+    Aus laesst den gewaehlten Namen stehen - er gilt nur nicht mehr.
+
+    Args:
+        aktiv:
+            True fuer das gewaehlte Theme, False fuer die Grundpalette.
+    """
+    global _themes_aktiv
+    _themes_aktiv = bool(aktiv)
+
+
+def themes_enabled() -> bool:
+    """Ob die Themes gelten."""
+    return _themes_aktiv
 
 
 def current_theme() -> str:
@@ -313,7 +341,7 @@ def colors(dunkel: bool | None = None) -> Colors:
         Die Colors. Ohne Theme: die drei Akzentwerte aus der gewaehlten
         Akzentfarbe, alles uebrige aus der Grundpalette.
     """
-    palette = palette_for_theme(_theme) if _theme else None
+    palette = palette_for_theme(_theme) if (_themes_aktiv and _theme) else None
     if palette is not None:
         # `expressive` setzt diese Stelle und nicht die Ableitung: dort geht
         # es um Farbwerte, hier um die Frage, wie die Oberflaeche auftritt.

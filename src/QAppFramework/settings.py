@@ -44,6 +44,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QDesktopServices
 from PySide6.QtWidgets import (
+    QCheckBox,
     QColorDialog,
     QComboBox,
     QDialog,
@@ -60,7 +61,7 @@ from PySide6.QtWidgets import (
 )
 
 from .color import is_light, normalize
-from .derive import available_themes
+from .derive import available_themes, default_theme
 from .texts import pruefe_sprache, text
 from .theme import (
     DEFAULT_ACCENT,
@@ -70,7 +71,9 @@ from .theme import (
     accent,
     accent_names,
     current_theme,
+    is_dark,
     mode,
+    themes_enabled,
     zoom,
 )
 
@@ -95,20 +98,30 @@ class Appearance:
         mode: Hell, dunkel oder wie das Betriebssystem.
         accent: Schluessel der Akzentfarbe.
         zoom: Vergroesserung der Oberflaeche in Prozent.
-        theme: Name eines Retro-Themes, oder "" fuer die Grundpalette. Ist
-            eines gesetzt, bestimmt es die Farben vollstaendig - `mode` und
-            `accent` bleiben gespeichert, wirken aber nicht.
+        theme: Name des zuletzt gewaehlten Themes. Bleibt auch stehen, wenn
+            `themes_enabled` aus ist - wer sie wieder einschaltet, macht dort
+            weiter, wo er war.
+        themes_enabled: Ob die Themes gelten. Aus heisst Grundpalette,
+            gesteuert ueber `mode` und `accent`. An heisst: das Theme
+            bestimmt alles, die beiden anderen ruhen.
     """
 
     mode: Mode = Mode.SYSTEM
     accent: str = DEFAULT_ACCENT
     zoom: int = DEFAULT_ZOOM
     theme: str = ""
+    themes_enabled: bool = False
 
     @classmethod
     def aktuell(cls) -> Appearance:
         """Nimmt den Stand, der gerade gilt - fuer Anwendungen ohne eigene Ablage."""
-        return cls(mode=mode(), accent=accent(), zoom=zoom(), theme=current_theme())
+        return cls(
+            mode=mode(),
+            accent=accent(),
+            zoom=zoom(),
+            theme=current_theme(),
+            themes_enabled=themes_enabled(),
+        )
 
 
 class SettingsDialogBase(QDialog):
@@ -339,6 +352,22 @@ class SettingsDialogBase(QDialog):
     def _seite_darstellung(self) -> QWidget:
         seite, formular = self.seite(text("einstellungen.darstellung", self._sprache))
 
+        # Der Schalter steht zuoberst, weil er bestimmt, was darunter gilt.
+        # Ohne ihn standen Erscheinungsbild, Akzentfarbe und Theme
+        # nebeneinander, und zwei davon waren wirkungslos, sobald das dritte
+        # gesetzt war - erklaeren liess sich das nur mit einem Hinweistext.
+        self._feld_themes_an = QCheckBox()
+        # Objektname, damit Tests und Stylesheets ihn von den Haken einer
+        # Anwendung unterscheiden koennen - `darstellung_erweitern()` haengt
+        # hier eigene Kontrollkaestchen daneben.
+        self._feld_themes_an.setObjectName("SettingsThemesToggle")
+        self._feld_themes_an.setChecked(self._darstellung.themes_enabled)
+        self._feld_themes_an.toggled.connect(self._felder_umschalten)
+        formular.addRow(
+            self.beschriftung(text("einstellungen.themes_verwenden", self._sprache)),
+            self._feld_themes_an,
+        )
+
         self._feld_modus = self.auswahl()
         for eintrag in (Mode.SYSTEM, Mode.DARK, Mode.LIGHT):
             self._feld_modus.addItem(text(f"mode.{eintrag.value}", self._sprache), eintrag.value)
@@ -369,7 +398,34 @@ class SettingsDialogBase(QDialog):
 
         self.darstellung_erweitern(formular)
         formular.addRow(self.hinweis(text("einstellungen.sofort", self._sprache)))
+
+        # Das Formular merken - die Sichtbarkeit haengt an ihm, nicht an den
+        # Feldern: eine versteckte Zeile soll auch ihre Beschriftung
+        # mitnehmen und keine Luecke hinterlassen.
+        self._formular_darstellung = formular
+        self._felder_umschalten(self._feld_themes_an.isChecked())
         return seite
+
+    def _felder_umschalten(self, themes_an: bool) -> None:
+        """Zeigt entweder Erscheinungsbild und Akzent oder die Themeliste.
+
+        Args:
+            themes_an:
+                Stellung des Schalters.
+        """
+        formular = getattr(self, "_formular_darstellung", None)
+        if formular is None:
+            return
+        formular.setRowVisible(self._feld_modus, not themes_an)
+        formular.setRowVisible(self._feld_akzent, not themes_an)
+        formular.setRowVisible(self._feld_theme, themes_an)
+
+        # Wer einschaltet und noch nie eines gewaehlt hat, soll nicht auf
+        # einer unveraenderten Oberflaeche raten muessen. Vorgeschlagen wird
+        # eines, das zum bisherigen Erscheinungsbild passt - ein dunkles fuer
+        # einen dunklen Schreibtisch.
+        if themes_an and not self._feld_theme.currentData():
+            self._feld_theme.setCurrentIndex(max(1, self._feld_theme.findData(default_theme(is_dark()))))
 
     def _seite_speicherort(self, orte: Sequence[tuple[str, Path]]) -> QWidget:
         seite, formular = self.seite(text("einstellungen.speicherort", self._sprache))
@@ -410,6 +466,7 @@ class SettingsDialogBase(QDialog):
             accent=str(self._feld_akzent.currentData()),
             zoom=int(self._feld_zoom.currentData()),
             theme=str(self._feld_theme.currentData()),
+            themes_enabled=self._feld_themes_an.isChecked(),
         )
         self.uebernehmen()
         self.accept()

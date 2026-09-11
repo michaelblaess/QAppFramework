@@ -244,6 +244,28 @@ def available_themes() -> dict[str, str]:
     return dict(sorted(DISPLAY_NAMES.items(), key=lambda paar: paar[1].lower()))
 
 
+# Was beim ersten Einschalten vorgeschlagen wird, je Erscheinungsbild.
+# Zwei ruhige Vertreter aus Michaels Auswahl vom 11.09.2026 - sie sollen
+# zeigen, worum es geht, ohne beim ersten Eindruck zu erschlagen.
+STANDARDVORSCHLAG_DUNKEL = "beastie"
+STANDARDVORSCHLAG_HELL = "cupertino"
+
+
+def default_theme(dunkel: bool) -> str:
+    """Welches Theme beim ersten Einschalten vorgeschlagen wird.
+
+    Args:
+        dunkel:
+            Ob die Oberflaeche gerade dunkel ist.
+
+    Returns:
+        Ein Theme-Name. Faellt auf den ersten der Liste zurueck, falls der
+        Vorschlag einmal umbenannt werden sollte.
+    """
+    vorschlag = STANDARDVORSCHLAG_DUNKEL if dunkel else STANDARDVORSCHLAG_HELL
+    return vorschlag if vorschlag in PALETTES_BY_NAME else next(iter(available_themes()))
+
+
 def palette_for_theme(name: str) -> Palette | None:
     """Sucht ein Theme ueber seinen Namen.
 
@@ -261,6 +283,7 @@ def palette_for_theme(name: str) -> Palette | None:
 
 __all__ = [
     "RETRO_PALETTES",
+    "default_theme",
     "Palette",
     "available_themes",
     "colors_from_palette",

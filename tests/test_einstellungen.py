@@ -211,9 +211,12 @@ class TestErweiterteDarstellung:
         d = MitErweiterung(Appearance())
         d.show()
         app.processEvents()
-        # Ueber findChild: das Widget muss wirklich im Dialog haengen, nicht
-        # nur als Feld existieren.
-        assert d.findChild(QCheckBox) is d.haken
+        # Ueber findChildren: das Widget muss wirklich im Dialog haengen,
+        # nicht nur als Feld existieren. Der Schalter der Bibliothek ist
+        # ebenfalls ein Kontrollkaestchen und faellt ueber seinen
+        # Objektnamen heraus.
+        eigene = [h for h in d.findChildren(QCheckBox) if h.objectName() != "SettingsThemesToggle"]
+        assert eigene == [d.haken]
         # Und zwar auf der Darstellungs-Seite, nicht irgendwo.
         nav = d.findChild(QListWidget, "SettingsNav")
         assert nav is not None
@@ -223,6 +226,159 @@ class TestErweiterteDarstellung:
         d.close()
 
     def test_ohne_erweiterung_bleibt_die_seite_wie_sie_ist(self, dialog: ProbeDialog) -> None:
+        """Nur der Schalter der Bibliothek, sonst kein Kontrollkaestchen."""
         from PySide6.QtWidgets import QCheckBox
 
-        assert not dialog.findChildren(QCheckBox)
+        namen = [h.objectName() for h in dialog.findChildren(QCheckBox)]
+        assert namen == ["SettingsThemesToggle"]
+
+
+class TestThemeSchalter:
+    """Themes sind ein eigener Modus, kein Eintrag zwischen anderen.
+
+    Michaels Entscheidung vom 11.09.2026: wer mit Themes nichts anfangen
+    kann, soll in den Einstellungen gar nicht erst darueber stolpern -
+    Erscheinungsbild und Akzentfarbe bleiben, wie sie immer waren. Wer sie
+    einschaltet, bekommt die Themeliste, und die beiden anderen Felder
+    verschwinden, weil sie dann ohnehin nicht mehr gelten.
+    """
+
+    def test_ohne_schalter_gilt_die_grundpalette(self) -> None:
+        from QAppFramework import colors, set_theme, set_themes_enabled
+        from QAppFramework.theme import LIGHT, Mode, set_mode
+
+        set_mode(Mode.LIGHT)
+        set_theme("marley")
+        set_themes_enabled(False)
+        try:
+            assert colors().bg_primary == LIGHT.bg_primary
+        finally:
+            set_theme("")
+            set_mode(Mode.SYSTEM)
+
+    def test_der_name_ueberlebt_das_abschalten(self) -> None:
+        """Sonst muesste man beim Wiedereinschalten von vorn suchen."""
+        from QAppFramework import current_theme, set_theme, set_themes_enabled
+
+        set_theme("marley")
+        set_themes_enabled(True)
+        set_themes_enabled(False)
+        try:
+            assert current_theme() == "marley"
+        finally:
+            set_theme("")
+            set_themes_enabled(False)
+
+    def test_eingeschaltet_bestimmt_das_theme_die_farben(self) -> None:
+        from QAppFramework import colors, set_theme, set_themes_enabled
+        from QAppFramework.derive import colors_from_palette, palette_for_theme
+
+        marley = palette_for_theme("marley")
+        assert marley is not None
+        set_theme("marley")
+        set_themes_enabled(True)
+        try:
+            assert colors().bg_primary == colors_from_palette(marley)["bg_primary"]
+        finally:
+            set_theme("")
+            set_themes_enabled(False)
+
+    def test_der_vorschlag_passt_zum_erscheinungsbild(self) -> None:
+        """Wer einschaltet, soll nicht auf einer unveraenderten Flaeche raten."""
+        from QAppFramework import default_theme
+        from QAppFramework.derive import palette_for_theme
+
+        for dunkel in (True, False):
+            palette = palette_for_theme(default_theme(dunkel))
+            assert palette is not None
+            assert palette.dark is dunkel, f"Vorschlag fuer dunkel={dunkel} passt nicht"
+
+
+class TestFelderWechseln:
+    """Der Schalter blendet um, statt wirkungslose Felder stehenzulassen.
+
+    Das war der Anlass: Erscheinungsbild, Akzentfarbe und Theme standen
+    nebeneinander, und zwei davon galten nicht mehr, sobald das dritte
+    gesetzt war. Ein Hinweistext musste es erklaeren.
+
+    Geprueft wird mit `isHidden()` und nicht mit `isVisible()`: letzteres
+    ist false, solange die Darstellungs-Seite nicht die aufgeschlagene ist,
+    und das hat mit dem Schalter nichts zu tun.
+    """
+
+    @staticmethod
+    def _sichtbar(dialog: ProbeDialog) -> tuple[bool, bool, bool]:
+        """Modus, Akzent, Theme - was davon steht."""
+        return (
+            not dialog._feld_modus.isHidden(),
+            not dialog._feld_akzent.isHidden(),
+            not dialog._feld_theme.isHidden(),
+        )
+
+    def test_ohne_themes_stehen_erscheinungsbild_und_akzent(self, app: QApplication) -> None:
+        d = ProbeDialog(Appearance(themes_enabled=False))
+        d.show()
+        app.processEvents()
+        try:
+            assert self._sichtbar(d) == (True, True, False)
+        finally:
+            d.close()
+
+    def test_mit_themes_steht_die_themeliste(self, app: QApplication) -> None:
+        d = ProbeDialog(Appearance(themes_enabled=True, theme="marley"))
+        d.show()
+        app.processEvents()
+        try:
+            assert self._sichtbar(d) == (False, False, True)
+        finally:
+            d.close()
+
+    def test_der_schalter_wirkt_sofort(self, app: QApplication) -> None:
+        """Ohne Neuaufbau des Dialogs - sonst waere er unbrauchbar."""
+        d = ProbeDialog(Appearance(themes_enabled=False))
+        d.show()
+        app.processEvents()
+        try:
+            assert self._sichtbar(d) == (True, True, False)
+            d._feld_themes_an.setChecked(True)
+            app.processEvents()
+            assert self._sichtbar(d) == (False, False, True)
+            d._feld_themes_an.setChecked(False)
+            app.processEvents()
+            assert self._sichtbar(d) == (True, True, False)
+        finally:
+            d.close()
+
+    def test_beim_einschalten_wird_ein_theme_vorgeschlagen(self, app: QApplication) -> None:
+        d = ProbeDialog(Appearance(themes_enabled=False, theme=""))
+        d.show()
+        app.processEvents()
+        try:
+            d._feld_themes_an.setChecked(True)
+            app.processEvents()
+            assert d._feld_theme.currentData(), "Kein Theme vorgeschlagen"
+        finally:
+            d.close()
+
+    def test_ein_gemerktes_theme_wird_nicht_ueberschrieben(self, app: QApplication) -> None:
+        """Wer wieder einschaltet, macht dort weiter, wo er war."""
+        d = ProbeDialog(Appearance(themes_enabled=False, theme="marley"))
+        d.show()
+        app.processEvents()
+        try:
+            d._feld_themes_an.setChecked(True)
+            app.processEvents()
+            assert d._feld_theme.currentData() == "marley"
+        finally:
+            d.close()
+
+    def test_der_schalter_landet_im_ergebnis(self, app: QApplication) -> None:
+        d = ProbeDialog(Appearance(themes_enabled=False))
+        d.show()
+        app.processEvents()
+        try:
+            d._feld_themes_an.setChecked(True)
+            d._speichern()
+            assert d.darstellung.themes_enabled is True
+        finally:
+            d.close()

@@ -104,14 +104,15 @@ TEXTE: dict[str, dict[str, str]] = {
     "einstellungen.darstellung": {"de": "Darstellung", "en": "Appearance"},
     "einstellungen.erscheinungsbild": {"de": "Erscheinungsbild", "en": "Theme"},
     "einstellungen.akzentfarbe": {"de": "Akzentfarbe", "en": "Accent colour"},
-    "einstellungen.theme": {"de": "Farbschema", "en": "Colour scheme"},
+    "einstellungen.themes_verwenden": {"de": "Themes verwenden", "en": "Use themes"},
+    "einstellungen.theme": {"de": "Theme", "en": "Theme"},
     # Der erste Eintrag der Liste. "Standard" statt "kein Theme" - die
     # Grundpalette ist eine Wahl wie jede andere, keine Leerstelle.
     "einstellungen.theme_standard": {"de": "Standard", "en": "Standard"},
     "einstellungen.zoom": {"de": "Zoom", "en": "Zoom"},
     "einstellungen.sofort": {
-        "de": "Ein Wechsel wirkt sofort, ohne Neustart. Ein Farbschema bringt Erscheinungsbild und Akzentfarbe mit.",
-        "en": "Changes take effect at once, no restart needed. A colour scheme brings its own appearance and accent.",
+        "de": "Ein Wechsel wirkt sofort, ohne Neustart.",
+        "en": "Changes take effect at once, no restart needed.",
     },
     "einstellungen.speicherort": {"de": "Speicherort", "en": "Storage"},
     "einstellungen.oeffnen": {"de": "Öffnen", "en": "Open"},
