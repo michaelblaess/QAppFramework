@@ -47,6 +47,15 @@ class Colors:
     red: str
     purple: str
 
+    # Ob die Oberflaeche Farbe zur Gliederung einsetzen darf: farbige
+    # Blockrahmen, Ueberschriften und Spaltenkoepfe im Akzentton.
+    #
+    # Die Grundpalette laesst das aus und bleibt das nuechterne Werkzeug,
+    # das sie immer war. Die Retro-Schemata setzen es - dort ist die
+    # Farbigkeit der Zweck, und ein Terminal gliedert genauso: gelbe
+    # Rahmen um Bloecke, farbige Koepfe ueber Spalten.
+    expressive: bool = False
+
 
 # Werte woertlich aus jira-timesheet-qt. Reihenfolge der Flaechen nach
 # Helligkeit: bg_primary (Fenster) - bg_secondary (Panels) - bg_tertiary
@@ -306,7 +315,11 @@ def colors(dunkel: bool | None = None) -> Colors:
     """
     palette = palette_for_theme(_theme) if _theme else None
     if palette is not None:
-        return Colors(**colors_from_palette(palette))
+        # `expressive` setzt diese Stelle und nicht die Ableitung: dort geht
+        # es um Farbwerte, hier um die Frage, wie die Oberflaeche auftritt.
+        # Ein Retro-Schema darf Farbe zur Gliederung einsetzen, die
+        # Grundpalette bleibt das nuechterne Werkzeug.
+        return Colors(**colors_from_palette(palette), expressive=True)
 
     ist_dunkles_bild = is_dark() if dunkel is None else dunkel
     grund = DARK if ist_dunkles_bild else LIGHT
@@ -371,12 +384,55 @@ def scale(qss: str) -> str:
     )
 
 
+def _expressive_rules(p: Colors) -> str:
+    """Die Farbgliederung fuer Retro-Schemata.
+
+    Nachempfunden, wie eine Terminaloberflaeche gliedert: ein Block bekommt
+    einen farbigen Rahmen statt einer grauen Linie, seine Ueberschrift den
+    Akzentton, und die Spaltenkoepfe heben sich farbig ab. Im Terminal ist
+    das die einzige Moeglichkeit zu gliedern - hier ist es eine Wahl, und
+    deshalb haengt sie am Kennzeichen der Palette.
+
+    Args:
+        p:
+            Die Farben. Ist `expressive` nicht gesetzt, kommt nichts zurueck.
+
+    Returns:
+        Zusaetzliche QSS-Regeln, oder eine leere Zeichenkette.
+    """
+    if not p.expressive:
+        return ""
+    return f"""
+    /* Bloecke bekommen einen farbigen Rahmen statt einer grauen Linie. */
+    #EmptyCard {{ border: 1px solid {p.accent}; }}
+    #Stat {{ border: 1px solid {p.accent}; }}
+    #DisclaimerScroll {{ border: 1px solid {p.accent}; }}
+
+    /* Ueberschriften tragen den Akzent. */
+    #EmptyTitle {{ color: {p.accent}; }}
+    #SettingsHeading {{ color: {p.accent}; }}
+
+    /* Spaltenkoepfe heben sich ab - im Terminal sind sie farbig, nicht fett. */
+    QHeaderView::section {{ color: {p.accent}; font-weight: 700; }}
+
+    /* Der aktive Reiter wird gefuellt statt nur unterstrichen. */
+    #ViewTabs::tab:selected {{ background-color: {p.accent_subtle}; }}
+
+    /* Dialoge grenzen sich vom Fenster dahinter ab. */
+    QDialog {{ border: 1px solid {p.accent}; }}
+"""
+
+
 def build_stylesheet(p: Colors) -> str:
     """Struktur und Schrift.
 
     Die Bloecke fuer Werkzeugleiste und Reiter sind woertlich aus
     jira-timesheet-qt uebernommen - Abstaende, Schriftstaerken und Farbwerte
     inbegriffen. Wer hier etwas aendert, bricht die Wiedererkennung.
+
+    Traegt die Palette das Kennzeichen `expressive`, kommen die Regeln aus
+    `_expressive_rules()` dazu. Sie stehen am Ende, damit sie die
+    zurueckhaltenden ueberschreiben.
     """
     return scale(f"""
     QWidget {{ font-size: 13px; }}
@@ -502,6 +558,7 @@ def build_stylesheet(p: Colors) -> str:
     #DialogButtons {{ background-color: {p.bg_secondary}; border-top: 1px solid {p.border}; }}
     #StepNumber {{ color: {readable_on(p.accent)}; background-color: {p.accent};
                       border-radius: 11px; font-weight: bold; }}
+    {_expressive_rules(p)}
     """)
 
 

@@ -34,7 +34,7 @@ from textual_themes.palettes import (
     Palette,
 )
 
-from .color import blend, ensure_contrast_on_all
+from .color import blend, contrast_ratio, ensure_contrast_on_all
 
 # ── Die Mischanteile ──────────────────────────────────────────────────
 #
@@ -69,6 +69,57 @@ ANTEILE_HELL: dict[str, float] = {
 # 0.35 statt 1.0, damit ein Elfenbein-Theme nicht auf reines Weiss springt
 # und seinen Charakter verliert.
 HELL_TABELLE_AUFHELLUNG = 0.35
+
+# Wie weit sich die Flaechen voneinander abheben muessen.
+#
+# Die Mischanteile oben sind aus der Grundpalette zurueckgerechnet, deren
+# Grund schon aufgehellt ist. Bei einem fast schwarzen Theme ergeben 2,3
+# Prozent praktisch nichts: gemessen kamen alle 40 Schemata auf 1,03 bis
+# 1,07 zwischen Fenstergrund und Panel, also unter jede Wahrnehmungs-
+# schwelle. Sichtbar wurde das an einem Dialog, der im Hintergrund verschwand.
+#
+# Die Zielwerte sind nicht erfunden, sondern das, was die Grundpalette
+# erreicht - sie ist der Beleg dafuer, dass es traegt.
+# Je Erscheinungsbild getrennt, wie die Mischanteile auch. Ein Ziel von
+# 1.25 fuer die Schaltflaeche taugt nur im Dunkelmodus: auf hellem Grund
+# hiesse das deutlich dunkler, und dann findet sich keine Textfarbe mehr,
+# die auf Fenstergrund UND Schaltflaeche traegt. Der Test an "brick" hat
+# genau das gezeigt.
+FLAECHEN_ZIELE_DUNKEL: dict[str, float] = {
+    "bg_secondary": 1.05,
+    "bg_tertiary": 1.09,
+    "bg_elevated": 1.25,
+}
+FLAECHEN_ZIELE_HELL: dict[str, float] = {
+    "bg_secondary": 1.035,
+    "bg_tertiary": 1.09,
+    "bg_elevated": 1.066,
+}
+
+
+def _abgesetzt(flaeche: str, grund: str, schrift: str, ziel: float) -> str:
+    """Mischt eine Flaeche weiter zur Schrift, bis sie sich vom Grund abhebt.
+
+    Zur Schrift und nicht zu Weiss: so behaelt die Flaeche den Farbton des
+    Themes. Ein Bernstein-Monitor bekommt eine bernsteinfarbene Karte, kein
+    graues Rechteck.
+
+    Args:
+        flaeche: Der Ausgangswert aus der Rohableitung.
+        grund: Der Fenstergrund, gegen den sie sich absetzen soll.
+        schrift: Die Textfarbe des Themes, Richtung der Mischung.
+        ziel: Das Mindestkontrastverhaeltnis.
+
+    Returns:
+        Die abgesetzte Flaeche, oder den Ausgangswert wenn er schon reicht.
+    """
+    if contrast_ratio(flaeche, grund) >= ziel:
+        return flaeche
+    for schritt in range(1, 301):
+        kandidat = blend(flaeche, schrift, schritt / 1000)
+        if contrast_ratio(kandidat, grund) >= ziel:
+            return kandidat
+    return blend(flaeche, schrift, 0.3)
 
 # ── Die Kontrastziele ─────────────────────────────────────────────────
 #
@@ -110,18 +161,32 @@ def colors_from_palette(palette: Palette) -> dict[str, str]:
         `theme.py` und damit von PySide6, und es laesst sich ohne Qt testen.
     """
     anteile = ANTEILE_DUNKEL if palette.dark else ANTEILE_HELL
+    flaechenziele = FLAECHEN_ZIELE_DUNKEL if palette.dark else FLAECHEN_ZIELE_HELL
     grund = palette.background
     schrift = palette.foreground
 
     # Stufe 1 - die Flaechen. Sie sind der Bezug fuer alles Weitere und
     # werden deshalb nicht nachtraeglich veraendert.
     bg_primary = grund
-    bg_secondary = blend(grund, schrift, anteile["bg_secondary"])
-    bg_elevated = blend(grund, schrift, anteile["bg_elevated"])
+    bg_secondary = _abgesetzt(
+        blend(grund, schrift, anteile["bg_secondary"]), grund, schrift, flaechenziele["bg_secondary"]
+    )
+    bg_elevated = _abgesetzt(
+        blend(grund, schrift, anteile["bg_elevated"]), grund, schrift, flaechenziele["bg_elevated"]
+    )
     if palette.dark:
-        bg_tertiary = blend(grund, schrift, anteile["bg_tertiary"])
+        bg_tertiary = _abgesetzt(
+            blend(grund, schrift, anteile["bg_tertiary"]), grund, schrift, flaechenziele["bg_tertiary"]
+        )
     else:
+        # Im Hellmodus setzt sich die Tabelle nach oben ab - sie ist das
+        # Papier, auf dem gelesen wird.
         bg_tertiary = blend(grund, "#FFFFFF", HELL_TABELLE_AUFHELLUNG)
+        # Bei einem fast weissen Grund geht das nicht: plan9 startet bei
+        # #FFFFEA, und Aufhellen bringt dort nichts mehr. Dann weicht die
+        # Tabelle nach unten aus, statt im Fenster zu verschwinden.
+        if contrast_ratio(bg_tertiary, grund) < flaechenziele["bg_tertiary"]:
+            bg_tertiary = _abgesetzt(grund, grund, schrift, flaechenziele["bg_tertiary"])
 
     flaechen = (bg_primary, bg_secondary, bg_tertiary, bg_elevated)
 

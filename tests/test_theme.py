@@ -262,3 +262,64 @@ class TestSchriftAufFarbflaeche:
         from QAppFramework.color import readable_on
 
         assert readable_on("#1a1a1a") == "#FFFFFF"
+
+
+class TestFarbgliederung:
+    """Farbe zur Gliederung gibt es nur in den Retro-Schemata.
+
+    Michaels Entscheidung vom 11.09.2026 nach dem Vergleich mit einer TUI:
+    die soll farbige Blockrahmen und Spaltenkoepfe bekommen, die
+    Grundpalette bleibt das nuechterne Werkzeug, das sie immer war.
+    """
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_die_grundpalette_bleibt_zurueckhaltend(self, palette: Colors) -> None:
+        assert palette.expressive is False
+        qss = build_stylesheet(palette)
+        assert "QHeaderView::section" not in qss
+        block = qss[qss.index("#EmptyCard") :][:160]
+        assert palette.border in block
+        assert f"border: 1px solid {palette.accent}" not in block
+
+    def test_ein_retro_schema_gliedert_mit_farbe(self) -> None:
+        from QAppFramework.derive import colors_from_palette, palette_for_theme
+
+        marley = palette_for_theme("marley")
+        assert marley is not None
+        farben = Colors(**colors_from_palette(marley), expressive=True)
+        qss = build_stylesheet(farben)
+        assert f"QHeaderView::section {{ color: {farben.accent}" in qss
+        assert f"#EmptyTitle {{ color: {farben.accent}" in qss
+
+    def test_das_kennzeichen_entscheidet_und_nicht_die_farbe(self) -> None:
+        """Gegenprobe: dieselben Farben ohne Kennzeichen ergeben nichts."""
+        from QAppFramework.derive import colors_from_palette, palette_for_theme
+
+        marley = palette_for_theme("marley")
+        assert marley is not None
+        nuechtern = Colors(**colors_from_palette(marley))
+        assert "QHeaderView::section" not in build_stylesheet(nuechtern)
+
+
+class TestFlaechentreppe:
+    """Die Flaechen muessen sich voneinander abheben.
+
+    Bis zum 11.09.2026 kamen alle 40 Schemata auf 1,03 bis 1,07 zwischen
+    Fenstergrund und Panel - unter jeder Wahrnehmungsschwelle. Sichtbar
+    wurde es an einem Dialog, der im Hintergrund verschwand. Die
+    Mischanteile stammen aus der Grundpalette, deren Grund schon aufgehellt
+    ist; bei fast schwarzem Grund ergeben 2,3 Prozent nichts.
+    """
+
+    @pytest.mark.parametrize(
+        "name", ["marley", "classic-terminal", "corleone", "cupertino", "plan9"]
+    )
+    def test_die_flaechen_setzen_sich_ab(self, name: str) -> None:
+        from QAppFramework.derive import colors_from_palette, palette_for_theme
+
+        palette = palette_for_theme(name)
+        assert palette is not None
+        w = colors_from_palette(palette)
+        for feld, ziel in (("bg_secondary", 1.03), ("bg_tertiary", 1.05)):
+            gemessen = contrast_ratio(w[feld], w["bg_primary"])
+            assert gemessen >= ziel, f"{name}.{feld} erreicht nur {gemessen:.3f}"
