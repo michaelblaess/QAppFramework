@@ -23,6 +23,7 @@ from PySide6.QtGui import QColor, QGuiApplication, QPalette
 
 from .color import readable_on
 from .derive import colors_from_palette, palette_for_theme
+from .icons import indicator_image
 from .texts import text as _text
 
 
@@ -412,6 +413,39 @@ def scale(qss: str) -> str:
     )
 
 
+def _zeichen_regeln(p: Colors) -> str:
+    """Haekchen und Punkt fuer die eingeschalteten Zustaende.
+
+    Sobald `::indicator` eine Regel bekommt, zeichnet Qt den Indikator
+    nicht mehr selbst - auch das Haekchen nicht. Ein gefuellter Kasten
+    allein ist mehrdeutig: Michael hat ihn am 11.09.2026 gesehen und als
+    Farbfleck gelesen, nicht als eingeschaltet.
+
+    Das Zeichen kommt deshalb als Bild dazu. Als Datei und nicht als
+    data:-URL: letztere nimmt Qt im Stylesheet nicht an, an diesem Tag
+    gemessen.
+
+    Args:
+        p:
+            Die Farben. Das Zeichen bekommt die Farbe, die auf dem
+            Akzent lesbar ist.
+
+    Returns:
+        Die Bildregeln, oder eine leere Zeichenkette, wenn sich die Bilder
+        nicht erzeugen liessen. Dann bleibt es beim gefuellten Kasten -
+        weniger gut, aber nicht kaputt.
+    """
+    farbe = readable_on(p.accent)
+    haken = indicator_image("mdi6.check-bold", farbe, 13)
+    punkt = indicator_image("mdi6.circle", farbe, 9)
+    regeln = []
+    if haken:
+        regeln.append(f"QCheckBox::indicator:checked {{ image: url({haken}); }}")
+    if punkt:
+        regeln.append(f"QRadioButton::indicator:checked {{ image: url({punkt}); }}")
+    return "\n    ".join(regeln)
+
+
 def _expressive_rules(p: Colors) -> str:
     """Die Farbgliederung fuer Retro-Schemata.
 
@@ -616,6 +650,7 @@ def build_stylesheet(p: Colors) -> str:
         border-color: {p.accent}; }}
     QCheckBox::indicator:checked, QRadioButton::indicator:checked {{
         background-color: {p.accent}; border-color: {p.accent}; }}
+    {_zeichen_regeln(p)}
     QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
         border-color: {p.border}; background-color: {p.bg_elevated}; }}
 

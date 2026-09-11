@@ -12,8 +12,12 @@ darf die Werkzeugleiste nicht verhindern.
 from __future__ import annotations
 
 import logging
+import tempfile
+from pathlib import Path
 
 from PySide6.QtGui import QIcon
+
+from .color import normalize
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +42,57 @@ GLYPHS: dict[str, str] = {
     "farbschema_weiter": "mdi6.palette-advanced",
     "farbschema_zurueck": "mdi6.palette-outline",
 }
+
+
+# Wohin die Zeichen fuer Kontrollkaestchen geschrieben werden. Ein
+# Stylesheet kann Bilder nur ueber einen Dateipfad einbinden - eine
+# data:-URL nimmt Qt nicht an, am 11.09.2026 gemessen. Die Dateien sind
+# jederzeit neu erzeugbar, deshalb das Temp-Verzeichnis.
+_ZEICHENORDNER = Path(tempfile.gettempdir()) / "QAppFramework-indicators"
+
+
+def indicator_image(glyph: str, farbe: str, groesse: int = 13) -> str:
+    """Schreibt ein Sinnbild als PNG und gibt den Pfad fuer ein Stylesheet.
+
+    Fuer Kontrollkaestchen und Optionsfelder. Sobald ein Stylesheet
+    `::indicator` anfasst, zeichnet Qt den Indikator nicht mehr selbst -
+    auch das Haekchen nicht. Es muss also als Bild kommen, und Bilder kennt
+    ein Stylesheet nur als Datei.
+
+    Der Dateiname enthaelt Glyph, Farbe und Groesse: ein Themewechsel
+    ueberschreibt damit nichts, und ein zweiter Aufruf kostet nichts.
+
+    Args:
+        glyph:
+            Die mdi6-Kennung, etwa "mdi6.check-bold".
+        farbe:
+            In welcher Farbe gezeichnet wird.
+        groesse:
+            Kantenlaenge in Bildpunkten.
+
+    Returns:
+        Der Pfad mit Schraegstrichen, wie ihn `url()` erwartet. Leer, wenn
+        das Zeichen nicht erzeugt werden konnte - der Aufrufer laesst die
+        Bildregel dann weg, statt auf ein fehlendes Bild zu verweisen.
+    """
+    sicher = f"{glyph}-{normalize(farbe)}-{groesse}".replace(".", "_")
+    ziel = _ZEICHENORDNER / f"{sicher}.png"
+    if ziel.is_file():
+        return ziel.as_posix()
+
+    try:
+        import qtawesome as qta
+
+        _ZEICHENORDNER.mkdir(parents=True, exist_ok=True)
+        pixmap = qta.icon(glyph, color=farbe).pixmap(groesse, groesse)
+        if pixmap.isNull() or not pixmap.save(str(ziel), "PNG"):
+            return ""
+    except Exception:  # pragma: no cover - haengt an der Umgebung
+        # Ohne laufende QApplication gibt es keine QPixmap. Das ist in
+        # Tests der Normalfall und kein Grund, das Stylesheet zu verlieren.
+        logger.debug("Zeichen '%s' konnte nicht erzeugt werden", glyph, exc_info=True)
+        return ""
+    return ziel.as_posix()
 
 
 def load_icon(name: str, farbe: str) -> QIcon:

@@ -51,3 +51,58 @@ class TestGlyphen:
         kaputten.
         """
         assert load_icon("gibt-es-nicht", "#ffffff").isNull()
+
+
+class TestIndikatorbilder:
+    """Das Haekchen im Kontrollkaestchen kommt als Bilddatei.
+
+    Sobald ein Stylesheet `::indicator` anfasst, zeichnet Qt den Indikator
+    nicht mehr selbst - auch das Haekchen nicht. Ein gefuellter Kasten
+    allein ist mehrdeutig, Michael hat ihn am 11.09.2026 als Farbfleck
+    gelesen.
+
+    Als Datei und nicht als data:-URL: letztere nimmt Qt im Stylesheet
+    nicht an. Am selben Tag gemessen, indem dasselbe Kaestchen mit und ohne
+    die Regel gezeichnet und die Bilder verglichen wurden - sie waren
+    identisch.
+    """
+
+    def test_ein_zeichen_entsteht_als_datei(self) -> None:
+        from pathlib import Path
+
+        from QAppFramework.icons import indicator_image
+
+        pfad = indicator_image("mdi6.check-bold", "#000000")
+        assert pfad, "Kein Pfad zurueckgekommen"
+        assert Path(pfad).is_file()
+        assert Path(pfad).stat().st_size > 0
+
+    def test_der_pfad_traegt_schraegstriche(self) -> None:
+        """`url()` versteht unter Windows keine Rueckwaertsstriche."""
+        from QAppFramework.icons import indicator_image
+
+        assert "\\" not in indicator_image("mdi6.check-bold", "#000000")
+
+    def test_zwei_farben_ergeben_zwei_dateien(self) -> None:
+        """Sonst ueberschriebe ein Themewechsel das Zeichen des anderen."""
+        from QAppFramework.icons import indicator_image
+
+        schwarz = indicator_image("mdi6.check-bold", "#000000")
+        weiss = indicator_image("mdi6.check-bold", "#FFFFFF")
+        assert schwarz != weiss
+
+    def test_ein_unbekannter_glyph_gibt_nichts_zurueck(self) -> None:
+        """Der Aufrufer laesst die Bildregel dann weg."""
+        from QAppFramework.icons import indicator_image
+
+        assert indicator_image("mdi6.gibt-es-nicht-xyz", "#000000") == ""
+
+    def test_das_stylesheet_bindet_das_zeichen_ein(self) -> None:
+        import re
+
+        from QAppFramework.theme import DARK, build_stylesheet
+
+        treffer = re.search(
+            r"QCheckBox::indicator:checked \{ image: url\((.+?)\); \}", build_stylesheet(DARK)
+        )
+        assert treffer is not None, "Keine Bildregel im Stylesheet"
