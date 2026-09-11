@@ -126,3 +126,101 @@ Akzent mit. Michaels fünf Akzentfarben gelten weiter für die Standardpalette.
   Tabellen hat noch niemand gegen ein Retro-Schema gesehen.
 - **Der Kalender in jira-timesheet-qt** zeichnet selbst und hat ein eigenes
   `apply_mode(mode)` - er kennt hell und dunkel, nicht das Farbschema.
+
+---
+
+## Offen seit 11.09.2026: Auswahl zusammenlegen und kuratieren
+
+Michael nach dem ersten Start von SiteHammer 0.3.0: die drei Felder kollidieren.
+Erscheinungsbild, Akzentfarbe und Farbschema sind drei Achsen, von denen zwei
+wirkungslos werden, sobald ein Schema gewählt ist. Der Hinweistext muss das
+erklären - und ein Hinweis, der eine Bedienung erklären muss, ist meist die
+falsche Bedienung.
+
+**Sein Vorschlag:** alles in ein Feld. Der Hell/Dunkel-Toggle entfällt, die
+Standardpalette erscheint als "Standard (Orange)", "Standard (Grün)" und so
+weiter. Dazu die Themes kuratieren statt alle vierzig anzubieten.
+
+### Die Kuratierung ist gemessen, nicht geraten
+
+Kontrast haben alle 40 bestanden - das sagt aber nur, dass nichts unlesbar ist,
+nicht ob man acht Stunden davor sitzen mag. Das bessere Maß ist die Sättigung
+des Fenstergrunds: ein kräftig eingefärbter Grund ermüdet, ein entsättigter
+nicht.
+
+| Theme | Art | Sättigung | Textkontrast |
+| --- | --- | ---: | ---: |
+| classic-terminal | dunkel | 0 % | 14,6 |
+| next | dunkel | 0 % | 10,9 |
+| minty | dunkel | 0 % | 11,6 |
+| gemstone | hell | 0 % | 15,4 |
+| cupertino | hell | 1 % | 15,5 |
+| clipper | hell | 6 % | 15,7 |
+| plan9 | hell | 8 % | 18,7 |
+| brick | hell | 11 % | 10,3 |
+| hercules | dunkel | 18 % | 9,9 |
+| corleone | dunkel | 21 % | 10,7 |
+| bebox | dunkel | 22 % | 9,1 |
+
+Danach kommt eine Lücke: der nächste ist beastie mit 30 %, und es geht bis
+commandr mit 100 %. **Elf Themes unter 25 Prozent, dann ein Sprung** - die
+Grenze liegt in den Daten, nicht im Geschmack.
+
+Brotkasten steht bei 69 % und erklärt damit, warum Michael es als schwer
+lesbar empfand. Nicht der Kontrast war zu niedrig (7,3 ist reichlich), sondern
+die Fläche zu kräftig.
+
+Das Messkript lag in `/tmp/saettigung.py` und rechnet mit `colorsys` über
+`colors_from_palette()` - drei Zeilen, jederzeit wiederholbar.
+
+### Der Haken am Zusammenlegen
+
+Michael hat das Erscheinungsbild fest auf "Hell" stehen, nutzt die Modus-Wahl
+also. Verschwindet der Toggle, muss sie in die Liste, sonst geht genau seine
+Einstellung verloren. Also nicht `Standard (Orange)`, sondern zehn Einträge:
+`Standard hell (Orange)` bis `Standard dunkel (Violett)`. Mit den elf Themes
+ergibt das 21 Einträge - lang, aber vollständig und auf einen Blick.
+
+### Die offene Entscheidung
+
+Was wird aus "Wie das Betriebssystem"? Heute die Vorgabe. Mit fünf Akzenten
+wären es 15 Standard-Einträge statt 10.
+
+- **Streichen.** Wer ein Farbschema wählt, will ein bestimmtes Aussehen, und
+  "richte dich nach Windows" ist das Gegenteil. Der Preis: ein Erstanwender
+  bekommt bei hellem System eine helle Oberfläche nur, weil die Vorgabe
+  zufällig passt, nicht weil die Anwendung sich anpasst.
+- **Als einzelner erster Eintrag behalten**, ohne Akzentvariante, mit Orange.
+  Dann 22 Einträge.
+
+Michael denkt darüber nach (11.09.2026). Bis dahin bleibt die Oberfläche wie
+sie ist - der Stand läuft.
+
+### Was beim Umbau mitzumachen wäre
+
+- Den Toggle aus dem Ansicht-Menü und aus `_erscheinungsbild_wechseln` nehmen.
+- Die gespeicherten Einstellungen wandern lassen: aus `modus` plus `akzent`
+  wird ein Schemaname, damit "Hell + Orange" nach dem Update genauso dasteht.
+- Die Felder Erscheinungsbild und Akzentfarbe aus dem Dialog der Bibliothek
+  entfernen - das betrifft auch jira-timesheet-qt.
+
+### Warum das bei Qt anders liegt als im Terminal
+
+Michael am 11.09.2026: "die meisten Themes sehen nicht gut aus bei Qt, das ist
+mir bei Visual Studio Code schon aufgefallen." Das deckt sich mit der Messung
+und liefert die Erklärung dazu:
+
+- **Im Editor ist der Grund größtenteils von Text bedeckt.** Der Charakter
+  eines Themes kommt aus der Syntaxfärbung, die Fläche selbst sieht man kaum.
+  In einer Desktop-Anwendung ist der Grund der überwiegende Bildanteil.
+- **Eine Oberfläche besteht aus vielen kleinen Flächen mit Rändern:** Knöpfe,
+  Eingabefelder, Reiter, Menüs, Bildlaufleisten, Kopfzeilen. Jede braucht eine
+  eigene Abstufung. Bei einem entsättigten Grund sind das Helligkeitsstufen -
+  bei einem gesättigten werden daraus Farbabstufungen, und die wirken schnell
+  schmutzig.
+- Ein Terminal kennt diese Abstufungen gar nicht: dort gibt es sechzehn Farben
+  und keine Ränder.
+
+Das ist auch der Grund, warum die Ableitung nichts daran ändern kann. Sie sorgt
+dafür, dass nichts unlesbar wird - dass eine Fläche ruhig genug für einen
+Arbeitstag ist, kann sie nicht herstellen.
