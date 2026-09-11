@@ -66,10 +66,12 @@ from .texts import pruefe_sprache, text
 from .theme import (
     DEFAULT_ACCENT,
     DEFAULT_ZOOM,
+    DIALOG_RAHMEN,
     ZOOM_LEVELS,
     Mode,
     accent,
     accent_names,
+    colors,
     current_theme,
     is_dark,
     mode,
@@ -143,7 +145,11 @@ class SettingsDialogBase(QDialog):
         self.setSizeGripEnabled(True)
 
         aussen = QVBoxLayout(self)
-        aussen.setContentsMargins(0, 0, 0, 0)
+        # Den Platz fuer den Dialograhmen freihalten. Ohne das zeichnet
+        # das erste Kind darueber, und der Rahmen steht nur dort, wo
+        # ein Layout zufaellig Rand hat.
+        rand = DIALOG_RAHMEN if colors().expressive else 0
+        aussen.setContentsMargins(rand, rand, rand, rand)
         aussen.setSpacing(0)
 
         koerper = QHBoxLayout()

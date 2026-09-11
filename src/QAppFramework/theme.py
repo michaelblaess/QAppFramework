@@ -113,6 +113,13 @@ LIGHT = Colors(
 RADIUS_SM = 4
 RADIUS_MD = 6
 
+# Breite des Dialograhmens im expressiven Modus. Steht hier und nicht nur
+# im Stylesheet, weil die Dialoge denselben Wert als Layoutrand brauchen:
+# ein Kind mit randlosem Layout zeichnet sonst ueber den Rahmen, und der
+# bleibt nur dort stehen, wo zufaellig Platz ist. Genau so sah der
+# Info-Dialog am 11.09.2026 aus - unten gerahmt, oben nicht.
+DIALOG_RAHMEN = 2
+
 # Qt liefert fuer Werkzeugleisten von sich aus 24 Pixel. jira-timesheet-qt setzt
 # nichts anderes, also wird hier ebenfalls nichts gesetzt. Der Wert steht nur
 # als Erwartung fuer den Test, nicht als Vorgabe an die Leiste.
@@ -482,7 +489,7 @@ def _expressive_rules(p: Colors) -> str:
 
     /* Dialoge grenzen sich vom Fenster dahinter ab - im Terminal ist das
        ein doppelter Rahmen, hier eine kraeftigere Linie. */
-    QDialog {{ border: 2px solid {p.accent}; }}
+    QDialog {{ border: {DIALOG_RAHMEN}px solid {p.accent}; }}
 
     /* Ein gefuellter Titelbalken, wie ihn eine Terminaloberflaeche ueber
        jeden Kasten setzt. Die Anwendung muss ihn vergeben - sie weiss, was
