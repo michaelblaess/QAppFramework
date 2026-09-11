@@ -7,6 +7,7 @@ gibt es hier immer einen brauchbaren Wert zurueck, notfalls den Rueckfall.
 
 from __future__ import annotations
 
+import colorsys
 import re
 from collections.abc import Sequence
 
@@ -106,6 +107,58 @@ def blend(grund: str, zumischung: str, anteil: float) -> str:
     return "#" + "".join(f"{max(0, min(255, k)):02X}" for k in kanaele)
 
 
+def _hsv(hexwert: str) -> tuple[float, float, float]:
+    """Farbton, Saettigung, Hellwert - alle drei zwischen 0 und 1."""
+    roh = normalize(hexwert)
+    kanaele = tuple(int(roh[i : i + 2], 16) / 255 for i in (0, 2, 4))
+    return colorsys.rgb_to_hsv(*kanaele)
+
+
+def _von_hsv(farbton: float, saettigung: float, hellwert: float) -> str:
+    """Setzt Farbton, Saettigung und Hellwert wieder zu '#RRGGBB' zusammen."""
+    kanaele = colorsys.hsv_to_rgb(farbton, saettigung, max(0.0, min(1.0, hellwert)))
+    return "#" + "".join(f"{round(kanal * 255):02X}" for kanal in kanaele)
+
+
+def brighten_to_contrast(farbe: str, hintergrund: str, ziel: float, *, schritte: int = 40) -> str:
+    """Hebt eine Farbe ueber ihre Helligkeit, nicht ueber Weissmischung.
+
+    Der Unterschied ist der Farbcharakter. Weiss einzumischen hebt den
+    Kontrast, kostet aber Saettigung: aus Ascots sattem Dunkelgruen wurde
+    so ein blasses Graugruen, das sich vom Fliesstext daneben kaum noch
+    unterschied. Ueber den Hellwert in HSV bleiben Farbton und Saettigung
+    erhalten - dasselbe Gruen, nur heller.
+
+    Args:
+        farbe:
+            Die gewuenschte Farbe.
+        hintergrund:
+            Die Flaeche, auf der sie steht.
+        ziel:
+            Das Mindestkontrastverhaeltnis.
+        schritte:
+            Wie fein gesucht wird.
+
+    Returns:
+        Die aufgehellte oder abgedunkelte Farbe. Reicht auch der volle
+        Hellwert nicht - bei einem satten Rot auf dunklem Grund kommt das
+        vor -, gibt sie den bestmoeglichen Wert zurueck. Der Aufrufer muss
+        dann pruefen und notfalls `ensure_contrast` nachschalten.
+    """
+    if contrast_ratio(farbe, hintergrund) >= ziel:
+        return f"#{normalize(farbe)}"
+
+    farbton, saettigung, hellwert = _hsv(farbe)
+    hoch = relative_luminance(hintergrund) < 0.5
+    for schritt in range(1, schritte + 1):
+        anteil = schritt / schritte
+        neu = hellwert + (1.0 - hellwert) * anteil if hoch else hellwert * (1 - anteil)
+        kandidat = _von_hsv(farbton, saettigung, neu)
+        if contrast_ratio(kandidat, hintergrund) >= ziel:
+            return kandidat
+    return _von_hsv(farbton, saettigung, 1.0 if hoch else 0.0)
+
+
 def ensure_contrast(farbe: str, hintergrund: str, ziel: float, *, schritte: int = 24) -> str:
     """Hellt eine Farbe auf oder dunkelt sie ab, bis sie ihr Ziel erreicht.
 
@@ -166,14 +219,20 @@ def ensure_contrast_on_all(farbe: str, hintergruende: Sequence[str], ziel: float
         return f"#{normalize(farbe)}"
 
     ergebnis = f"#{normalize(farbe)}"
+
+    # Erst ueber die Helligkeit - das erhaelt den Farbcharakter. Nur wenn
+    # das Ziel damit nicht zu erreichen ist, kommt die Weissmischung dazu.
+    for grund in hintergruende:
+        ergebnis = brighten_to_contrast(ergebnis, grund, ziel)
+
     # Nacheinander gegen jede Flaeche heben und das Ergebnis weiterreichen:
     # eine Anhebung fuer die eine Flaeche kann den Kontrast zu einer anderen
     # senken, deshalb am Ende noch eine Runde zur Kontrolle.
     for _ in range(2):
-        for grund in hintergruende:
-            ergebnis = ensure_contrast(ergebnis, grund, ziel)
         if min(contrast_ratio(ergebnis, g) for g in hintergruende) >= ziel:
             break
+        for grund in hintergruende:
+            ergebnis = ensure_contrast(ergebnis, grund, ziel)
     return ergebnis
 
 

@@ -257,3 +257,63 @@ class TestKuratierteAuswahl:
         from QAppFramework.derive import selectable_themes
 
         assert selectable_themes("gibt-es-nicht") == available_themes()
+
+
+class TestFarbcharakter:
+    """Gehobene Farben muessen ihren Charakter behalten.
+
+    Michael am 11.09.2026 zu Ascot und Bunty: "muss fuer Qt ueberarbeitet
+    werden". Der Grund lag nicht an den Themes, sondern an der
+    Hebemethode - sie mischte Weiss ein, und das entsaettigt. Aus Ascots
+    sattem Dunkelgruen wurde ein blasses Graugruen, das sich vom
+    Fliesstext daneben kaum noch unterschied (Abstand 28 im RGB-Raum).
+
+    Jetzt wird zuerst ueber den Hellwert gehoben, was Farbton und
+    Saettigung erhaelt, und nur wenn das Ziel damit unerreichbar bleibt
+    kommt die Weissmischung dazu.
+    """
+
+    # Ein Test auf Mindestabstand zum Fliesstext stand hier und ist wieder
+    # geflogen: er schlug bei Corleone an, das Michael ausdruecklich gut
+    # findet. Dritter Anlauf, eine Formel fuer sein Urteil zu finden,
+    # dritter Fehlschlag. Was bleibt, sind die beiden Tests unten - sie
+    # pruefen, was belegt ist: dass das Heben den Farbton erhaelt.
+
+    def test_ein_sattes_gruen_bleibt_satt(self) -> None:
+        """Der Fall, an dem es aufgefallen ist."""
+        import colorsys
+
+        werte = colors_from_palette(palette_for_theme("ascot"))  # type: ignore[arg-type]
+        roh = werte["green"].lstrip("#")
+        kanaele = tuple(int(roh[i : i + 2], 16) / 255 for i in (0, 2, 4))
+        saettigung = colorsys.rgb_to_hsv(*kanaele)[1]
+        assert saettigung >= 0.5, f"Ascots Gruen ist mit {saettigung:.0%} zu blass"
+
+    def test_das_heben_ueber_helligkeit_erhaelt_den_farbton(self) -> None:
+        """Gegenprobe gegen die alte Methode.
+
+        Weiss einzumischen haette hier eine deutlich blassere Farbe
+        ergeben - der Test scheitert, wenn jemand darauf zurueckgeht.
+        """
+        import colorsys
+
+        from QAppFramework.color import brighten_to_contrast, ensure_contrast
+
+        def saettigung(hexwert: str) -> float:
+            roh = hexwert.lstrip("#")
+            kanaele = tuple(int(roh[i : i + 2], 16) / 255 for i in (0, 2, 4))
+            return colorsys.rgb_to_hsv(*kanaele)[1]
+
+        ueber_hsv = brighten_to_contrast("#2E7D52", "#173E2D", 4.5)
+        ueber_weiss = ensure_contrast("#2E7D52", "#173E2D", 4.5)
+        assert saettigung(ueber_hsv) > saettigung(ueber_weiss) + 0.2
+
+
+def _abstand(erste: str, zweite: str) -> float:
+    """Der Abstand zweier Farben im RGB-Raum, 0 bis 441."""
+    def kanaele(hexwert: str) -> tuple[int, ...]:
+        roh = hexwert.lstrip("#")
+        return tuple(int(roh[i : i + 2], 16) for i in (0, 2, 4))
+
+    a, b = kanaele(erste), kanaele(zweite)
+    return sum((a[i] - b[i]) ** 2 for i in range(3)) ** 0.5

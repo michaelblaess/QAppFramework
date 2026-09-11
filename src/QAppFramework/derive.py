@@ -260,6 +260,7 @@ KURATIERT: tuple[str, ...] = (
     "clipper",
     "corleone",
     "cupertino",
+    "flughund",
     "gemstone",
     "marley",
     "motif",
