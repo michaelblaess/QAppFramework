@@ -234,36 +234,37 @@ def colors_from_palette(palette: Palette) -> dict[str, str]:
     }
 
 
-# Die Themes, die Michael am 11.09.2026 am laufenden Programm angesehen und
-# fuer gut befunden hat. Nur sie stehen zur Auswahl.
+# Die Themes, die Michael am 11.09.2026 am laufenden Programm angesehen
+# und verworfen hat. Alle uebrigen stehen zur Auswahl.
 #
-# Bewusst eine Liste und keine Formel. Zwei Versuche, das Urteil zu
-# berechnen, sind an seiner Auswahl gescheitert: die Saettigung des Grundes
-# haette Bunty ausgeschlossen (100 Prozent, gefaellt ihm), ein Mindestabstand
-# der Statusfarben zum Akzent haette Gemstone, Clipper, Ascot und Corleone
-# erwischt. Und Hulkula, das er als "erschlaegt einen mit seinem Gruen"
-# aussortiert hat, faellt bei keinem der Masse durch.
+# Bewusst eine Ausschlussliste und keine Positivliste: er hat einzelne
+# abgelehnt, nicht alle uebrigen bestaetigt. Eine Positivliste haette
+# behauptet, jedes fehlende sei geprueft und durchgefallen - tatsaechlich
+# ist es nur noch niemandem aufgefallen.
+#
+# Und bewusst eine Liste und keine Formel. Drei Versuche, sein Urteil zu
+# berechnen, sind an seiner eigenen Auswahl gescheitert: die Saettigung
+# des Grundes haette Bunty ausgeschlossen, ein Mindestabstand der
+# Statusfarben zum Akzent gleich vier weitere, ein Abstand zum Fliesstext
+# dann Corleone. Umgekehrt faellt Hulkula, das er mit "erschlaegt einen
+# mit seinem Gruen" aussortiert hat, bei keinem der Masse durch.
 #
 # Was ein Theme ueber einen Arbeitstag traegt, entscheidet der Augenschein.
 # Die Messung schuetzt davor, dass etwas unlesbar wird - mehr kann sie nicht.
-#
-# Die Liste waechst, wenn Michael weitere durchsieht. Die uebrigen 30 bleiben
-# im Paket und lassen sich hier eintragen, ohne dass sonst etwas zu tun waere.
-KURATIERT: tuple[str, ...] = (
-    "ascot",
-    "beastie",
-    "bebox",
-    "brick",
-    "bunty",
-    "classic-navy",
-    "classic-terminal",
-    "clipper",
-    "corleone",
-    "cupertino",
-    "flughund",
-    "gemstone",
-    "marley",
-    "motif",
+AUSGESCHLOSSEN: frozenset[str] = frozenset(
+    {
+        # "erschlaegt einen" - zu viel Farbe auf der Flaeche.
+        "boing",
+        "brotkasten",
+        "hulkula",
+        # Ohne naehere Begruendung verworfen.
+        "commandr",
+        "geeko",
+        "luna",
+        "plan9",
+        "synthwave",
+        "warp",
+    }
 )
 
 
@@ -276,14 +277,14 @@ def available_themes() -> dict[str, str]:
         Geliefert werden nur die kuratierten - ein Name aus `KURATIERT`,
         den es nicht gibt, faellt still weg statt die Auswahl zu sprengen.
     """
-    auswahl = {name: DISPLAY_NAMES[name] for name in KURATIERT if name in DISPLAY_NAMES}
+    auswahl = {n: a for n, a in DISPLAY_NAMES.items() if n not in AUSGESCHLOSSEN}
     return dict(sorted(auswahl.items(), key=lambda paar: paar[1].lower()))
 
 
 def selectable_themes(aktiv: str = "") -> dict[str, str]:
-    """Die kuratierten Themes, plus das gerade aktive.
+    """Die waehlbaren Themes, plus das gerade aktive.
 
-    Ein Theme, das jemand gewaehlt hat, bevor die Auswahl kuratiert wurde,
+    Ein Theme, das jemand gewaehlt hat, bevor es ausgeschlossen wurde,
     gilt weiter - es darf dann aber nicht aus der Liste verschwinden. Sonst
     zeigt die Oberflaeche etwas an, das im Auswahlfeld nicht vorkommt, und
     beim ersten Blaettern ist es unwiederbringlich weg.
@@ -384,7 +385,7 @@ __all__ = [
     "RETRO_PALETTES",
     "default_theme",
     "Palette",
-    "KURATIERT",
+    "AUSGESCHLOSSEN",
     "all_themes",
     "available_themes",
     "colors_from_palette",

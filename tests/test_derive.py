@@ -209,16 +209,15 @@ class TestKurznamen:
         assert short_theme_names()["classic-navy"] == "Classic Navy"
 
 
-class TestKuratierteAuswahl:
-    """Nur Themes, die Michael am laufenden Programm gesehen hat.
+class TestAuswahl:
+    """Alle Themes ausser denen, die Michael verworfen hat.
 
-    Zwei Versuche, das Urteil zu berechnen, sind an seiner eigenen Auswahl
-    gescheitert - die Saettigung des Grundes haette Bunty ausgeschlossen,
-    ein Mindestabstand der Statusfarben zum Akzent gleich vier weitere.
-    Und Hulkula, das er als "erschlaegt einen mit seinem Gruen"
-    aussortiert hat, faellt bei keinem der Masse durch.
+    Eine Ausschlussliste und keine Positivliste: er hat einzelne abgelehnt,
+    nicht alle uebrigen bestaetigt.
 
-    Deshalb eine Liste und keine Formel.
+    Und eine Liste und keine Formel. Drei Versuche, sein Urteil zu
+    berechnen, sind an seiner eigenen Auswahl gescheitert - zuletzt an
+    Corleone, das er gut findet.
     """
 
     def test_die_auswahl_ist_kleiner_als_der_bestand(self) -> None:
@@ -226,12 +225,18 @@ class TestKuratierteAuswahl:
 
         assert 0 < len(available_themes()) < len(all_themes())
 
-    def test_jeder_kuratierte_name_existiert(self) -> None:
-        """Ein Tippfehler in der Liste faellt sonst nur als fehlender Eintrag auf."""
-        from QAppFramework.derive import KURATIERT, all_themes
+    def test_jeder_ausgeschlossene_name_existiert(self) -> None:
+        """Ein Tippfehler dort schliesst nichts aus und faellt sonst nicht auf."""
+        from QAppFramework.derive import AUSGESCHLOSSEN, all_themes
 
-        unbekannt = [name for name in KURATIERT if name not in all_themes()]
+        unbekannt = [name for name in AUSGESCHLOSSEN if name not in all_themes()]
         assert not unbekannt, unbekannt
+
+    def test_die_ausgeschlossenen_fehlen_wirklich(self) -> None:
+        from QAppFramework.derive import AUSGESCHLOSSEN
+
+        auswahl = set(available_themes())
+        assert not (auswahl & AUSGESCHLOSSEN)
 
     def test_beide_erscheinungsbilder_sind_vertreten(self) -> None:
         """Sonst haette ein halber Tag Auswahl gar keine."""
