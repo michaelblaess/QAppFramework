@@ -446,8 +446,20 @@ def _expressive_rules(p: Colors) -> str:
     /* Der aktive Reiter wird gefuellt statt nur unterstrichen. */
     #ViewTabs::tab:selected {{ background-color: {p.accent_subtle}; }}
 
-    /* Dialoge grenzen sich vom Fenster dahinter ab. */
-    QDialog {{ border: 1px solid {p.accent}; }}
+    /* Dialoge grenzen sich vom Fenster dahinter ab - im Terminal ist das
+       ein doppelter Rahmen, hier eine kraeftigere Linie. */
+    QDialog {{ border: 2px solid {p.accent}; }}
+
+    /* Ein gefuellter Titelbalken, wie ihn eine Terminaloberflaeche ueber
+       jeden Kasten setzt. Die Anwendung muss ihn vergeben - sie weiss, was
+       die Ueberschrift ihres Dialogs ist. */
+    #DialogTitle {{ background-color: {p.accent}; color: {readable_on(p.accent)};
+                    font-size: 15px; font-weight: 700;
+                    padding: 8px 14px; border-radius: {RADIUS_SM}px; }}
+
+    /* Zwischenueberschriften bekommen die Unterstreichung aus der TUI. */
+    #SectionTitle {{ color: {p.accent}; font-weight: 700;
+                     border-bottom: 1px solid {p.accent}; padding-bottom: 2px; }}
 """
 
 
@@ -586,6 +598,49 @@ def build_stylesheet(p: Colors) -> str:
     #DialogButtons {{ background-color: {p.bg_secondary}; border-top: 1px solid {p.border}; }}
     #StepNumber {{ color: {readable_on(p.accent)}; background-color: {p.accent};
                       border-radius: 11px; font-weight: bold; }}
+
+    /* Kontrollkaestchen. Fusion zeichnet sie aus der Palette, und bei
+       einem dunkelgruenen Theme verschwand der Indikator fast vollstaendig -
+       Michael hat am 11.09.2026 einen Screenshot geschickt, auf dem nur ein
+       Haken ohne Kasten zu sehen war. Gefuellt statt mit Haken: sobald man
+       ::indicator stylt, ersetzt man Qts Zeichnung ganz, und ein Haken
+       braeuchte eine Bilddatei. Der gefuellte Kasten ist eindeutig und
+       kommt ohne aus. */
+    QCheckBox::indicator, QRadioButton::indicator {{
+        width: 15px; height: 15px;
+        border: 1px solid {p.border_hover};
+        background-color: {p.bg_tertiary}; }}
+    QCheckBox::indicator {{ border-radius: {RADIUS_SM}px; }}
+    QRadioButton::indicator {{ border-radius: 8px; }}
+    QCheckBox::indicator:hover, QRadioButton::indicator:hover {{
+        border-color: {p.accent}; }}
+    QCheckBox::indicator:checked, QRadioButton::indicator:checked {{
+        background-color: {p.accent}; border-color: {p.accent}; }}
+    QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {{
+        border-color: {p.border}; background-color: {p.bg_elevated}; }}
+
+    /* Knopfvarianten. An sechs Stellen in beiden Anwendungen wird
+       `setProperty("variant", ...)` gesetzt - bis zum 11.09.2026 gab es
+       dazu keine einzige Regel, die Absicht verpuffte also vollstaendig.
+       Die Grundform bleibt Fusion ueberlassen: wer QPushButton selbst
+       stylt, ersetzt dessen Zeichnung ganz und muss jeden Zustand
+       nachbauen. Hier wird nur die Fuellung gesetzt. */
+    QPushButton[variant="primary"] {{ background-color: {p.accent};
+                                      color: {readable_on(p.accent)};
+                                      border: 1px solid {p.accent};
+                                      border-radius: {RADIUS_SM}px;
+                                      padding: 5px 14px; font-weight: 600; }}
+    QPushButton[variant="primary"]:hover {{ background-color: {p.accent_hover};
+                                            border-color: {p.accent_hover}; }}
+    QPushButton[variant="primary"]:disabled {{ background-color: {p.bg_elevated};
+                                               color: {p.text_tertiary};
+                                               border-color: {p.border}; }}
+    /* Die zweite Ebene traegt nur eine Kante, keine Flaeche - sonst
+       konkurriert sie mit der Hauptaktion. */
+    QPushButton[variant="secondary"] {{ border: 1px solid {p.border};
+                                        border-radius: {RADIUS_SM}px;
+                                        padding: 5px 12px; }}
+    QPushButton[variant="secondary"]:hover {{ border-color: {p.border_hover}; }}
     {_expressive_rules(p)}
     """)
 

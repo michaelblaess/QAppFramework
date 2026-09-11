@@ -323,3 +323,53 @@ class TestFlaechentreppe:
         for feld, ziel in (("bg_secondary", 1.03), ("bg_tertiary", 1.05)):
             gemessen = contrast_ratio(w[feld], w["bg_primary"])
             assert gemessen >= ziel, f"{name}.{feld} erreicht nur {gemessen:.3f}"
+
+
+class TestBedienelemente:
+    """Elemente, deren Sichtbarkeit sonst vom Zufall der Palette abhaengt.
+
+    Beide Faelle hat Michael am 11.09.2026 an einem dunkelgruenen Theme
+    gesehen: das Kontrollkaestchen war fast nicht zu erkennen, und die
+    Knoepfe eines Dialogs sahen alle gleich aus, obwohl an sechs Stellen
+    `setProperty("variant", ...)` steht.
+    """
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_das_kontrollkaestchen_hat_einen_rahmen(self, palette: Colors) -> None:
+        qss = build_stylesheet(palette)
+        block = qss[qss.index("QCheckBox::indicator,") :][:240]
+        assert f"border: 1px solid {palette.border_hover}" in block
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_eingeschaltet_wird_es_gefuellt(self, palette: Colors) -> None:
+        qss = build_stylesheet(palette)
+        block = qss[qss.index("QCheckBox::indicator:checked") :][:200]
+        assert f"background-color: {palette.accent}" in block
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_die_hauptaktion_ist_gefuellt(self, palette: Colors) -> None:
+        """`variant=primary` war bis zum 11.09.2026 wirkungslos."""
+        from QAppFramework.color import readable_on
+
+        qss = build_stylesheet(palette)
+        block = qss[qss.index('QPushButton[variant="primary"]') :][:260]
+        assert f"background-color: {palette.accent}" in block
+        assert f"color: {readable_on(palette.accent)}" in block
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_die_zweite_ebene_traegt_nur_eine_kante(self, palette: Colors) -> None:
+        """Sonst konkurriert sie mit der Hauptaktion."""
+        qss = build_stylesheet(palette)
+        block = qss[qss.index('QPushButton[variant="secondary"]') :][:200]
+        assert f"border: 1px solid {palette.border}" in block
+        assert "background-color" not in block
+
+    def test_jede_gesetzte_variante_hat_eine_regel(self) -> None:
+        """Gegenprobe gegen genau den Fehler, um den es ging.
+
+        Wer eine neue Variante vergibt, ohne sie hier einzutragen, bekommt
+        wieder toten Code.
+        """
+        qss = build_stylesheet(DARK)
+        for variante in ("primary", "secondary"):
+            assert f'QPushButton[variant="{variante}"]' in qss
