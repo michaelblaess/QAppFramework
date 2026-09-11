@@ -209,7 +209,7 @@ class TestKurznamen:
         assert short_theme_names()["classic-navy"] == "Classic Navy"
 
 
-class TestAuswahl:
+class TestAusschluss:
     """Alle Themes ausser denen, die Michael verworfen hat.
 
     Eine Ausschlussliste und keine Positivliste: er hat einzelne abgelehnt,

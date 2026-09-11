@@ -82,6 +82,7 @@ from .theme import (
     toggled,
     zoom,
 )
+from .titlebar import style_all_windows, style_window, watch_new_windows
 
 __version__ = "0.11.0"
 __author__ = "Michael Blaess"
@@ -151,8 +152,11 @@ __all__ = [
     "set_themes_enabled",
     "selectable_themes",
     "set_zoom",
+    "style_all_windows",
+    "style_window",
     "short_theme_names",
     "themes_enabled",
+    "watch_new_windows",
     "scale",
     "system_is_dark",
     "text",

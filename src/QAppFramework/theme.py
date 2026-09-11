@@ -738,4 +738,16 @@ def apply_theme(app: QGuiApplication, dunkel: bool | None = None) -> Colors:
     setze_qss = getattr(app, "setStyleSheet", None)
     if callable(setze_qss):
         setze_qss(build_stylesheet(p))
+
+    # Die Titelleiste zeichnet das Betriebssystem und erfaehrt vom
+    # Stylesheet nichts. Unter Windows laesst sie sich mitfaerben, sonst
+    # tut der Aufruf nichts. Lazy importiert, damit `theme` nicht an
+    # `titlebar` haengt - das braucht `colors()` von hier.
+    try:
+        from .titlebar import style_all_windows, watch_new_windows
+
+        watch_new_windows()
+        style_all_windows(p)
+    except Exception:  # pragma: no cover - haengt an der Umgebung
+        pass
     return p
