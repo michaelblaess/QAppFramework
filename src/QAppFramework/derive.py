@@ -256,6 +256,7 @@ KURATIERT: tuple[str, ...] = (
     "brick",
     "bunty",
     "classic-navy",
+    "classic-terminal",
     "clipper",
     "corleone",
     "cupertino",
