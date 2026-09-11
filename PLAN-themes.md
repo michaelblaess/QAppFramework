@@ -224,3 +224,52 @@ und liefert die Erklärung dazu:
 Das ist auch der Grund, warum die Ableitung nichts daran ändern kann. Sie sorgt
 dafür, dass nichts unlesbar wird - dass eine Fläche ruhig genug für einen
 Arbeitstag ist, kann sie nicht herstellen.
+
+### Korrektur: nicht die Sättigung zählt, sondern S mal V (11.09.2026)
+
+Michaels Auswahl nach dem Ansehen hat die Messung von oben widerlegt. Seine
+zehn Guten: Motif, Gemstone, Clipper, Cupertino, Classic Navy, Bunty, BeBox,
+Beastie, Corleone, Ascot. Fünf davon lagen über meiner 25-Prozent-Grenze,
+Bunty sogar bei 100 Prozent Sättigung.
+
+Der Grund: **die Farbmenge einer Fläche ist das Produkt aus Sättigung und
+Helligkeit, nicht die Sättigung allein.**
+
+| | Sättigung | Helligkeit | S mal V | Urteil |
+| --- | ---: | ---: | ---: | --- |
+| Bunty | 100 % | 17 % | 17,3 % | gut |
+| Brotkasten | 69 % | 54 % | 37,3 % | schwer lesbar |
+
+Ein fast schwarzes Aubergine darf hochgesättigt sein - bei 17 Prozent
+Helligkeit sieht man die Farbigkeit kaum. Ein mittelhelles Blauviolett bei
+54 Prozent dagegen schon.
+
+**Die Grenze liegt zwischen 31,4 und 37,3 Prozent.** Michaels gesamte Auswahl
+liegt darunter, Brotkasten darüber. Nur fünf Themes überschreiten sie: boing,
+brotkasten, commandr, luna, metropolis. Das Messkript stand in `/tmp/chroma.py`
+und rechnet über `colorsys` auf `colors_from_palette()`.
+
+Das heißt auch: **die Kuratierung muss nicht auf elf schrumpfen.** 35 der 40
+liegen unter der Grenze. Welche davon Michael tatsächlich mag, entscheidet
+weiter der Augenschein - er sieht sich die übrigen noch an.
+
+### Ein echter Fehler, gefunden an Classic Navy (11.09.2026)
+
+Michael: "Classic Navy geht auch, aber aktivierte Toggles gehen unter."
+Nachgemessen war es kein Problem dieses Schemas, sondern überall:
+
+Ein eingerasteter Werkzeugknopf trug allein `accent_subtle`, eine
+durchscheinende Fläche mit 20 Prozent Deckkraft. Gegen ihren Untergrund kam
+die über alle 40 Schemata und beide Grundpaletten auf **1,16 bis 1,68** - der
+schlechteste Fall ist ausgerechnet die Standardpalette hell mit 1,17. Weniger,
+als eine Trennlinie erreichen muss, und die zeigt keinen Zustand an.
+
+Behoben in `bfee1650`: `:checked` bekommt zusätzlich einen Rahmen in
+Akzentfarbe, damit mindestens 3,17 statt 1,16. Der ruhende Knopf trägt
+`1px solid transparent`, sonst springt die Leiste beim Einrasten.
+
+**Die Lehre über den Fall hinaus:** eine durchscheinende Fläche ist kein
+Zustandsmerkmal. Sie liegt per Bauart dicht an ihrem Untergrund - was sie
+markiert, muss zusätzlich eine eigene Kante oder Farbe haben. Der Fehler fiel
+nur deshalb an einem Retro-Schema auf, weil dort mehr Leute hinsehen als auf
+eine Palette, die man seit einem Jahr kennt.
