@@ -121,9 +121,10 @@ class TestKontrast:
 
 class TestAuswahl:
     def test_jedes_theme_hat_einen_anzeigenamen(self) -> None:
-        namen = available_themes()
-        assert len(namen) == 40
-        assert all(namen.values())
+        from QAppFramework.derive import all_themes
+
+        assert len(all_themes()) == 40
+        assert all(all_themes().values())
 
     def test_die_liste_ist_nach_anzeigenamen_sortiert(self) -> None:
         werte = list(available_themes().values())
@@ -178,6 +179,14 @@ class TestKurznamen:
         assert set(kurz) == set(available_themes())
         assert all(kurz.values())
 
+    def test_die_meisten_werden_wirklich_kuerzer_gegenprobe(self) -> None:
+        """Ueber ALLE, nicht nur die kuratierten - sonst ist die Stichprobe klein."""
+        from QAppFramework.derive import all_themes
+
+        lang = all_themes()
+        gekuerzt = sum(1 for name, anzeige in lang.items() if anzeige.count(" ") > 1)
+        assert gekuerzt >= 30
+
     def test_der_kurzname_ist_der_anfang_des_langen(self) -> None:
         from QAppFramework.derive import short_theme_names
 
@@ -192,9 +201,59 @@ class TestKurznamen:
 
         lang = available_themes()
         gekuerzt = sum(1 for s, k in short_theme_names().items() if k != lang[s])
-        assert gekuerzt >= 30, f"nur {gekuerzt} von {len(lang)} gekuerzt"
+        assert gekuerzt >= len(lang) - 2, f"nur {gekuerzt} von {len(lang)} gekuerzt"
 
     def test_ein_name_ohne_trenner_bleibt_ganz(self) -> None:
         from QAppFramework.derive import short_theme_names
 
         assert short_theme_names()["classic-navy"] == "Classic Navy"
+
+
+class TestKuratierteAuswahl:
+    """Nur Themes, die Michael am laufenden Programm gesehen hat.
+
+    Zwei Versuche, das Urteil zu berechnen, sind an seiner eigenen Auswahl
+    gescheitert - die Saettigung des Grundes haette Bunty ausgeschlossen,
+    ein Mindestabstand der Statusfarben zum Akzent gleich vier weitere.
+    Und Hulkula, das er als "erschlaegt einen mit seinem Gruen"
+    aussortiert hat, faellt bei keinem der Masse durch.
+
+    Deshalb eine Liste und keine Formel.
+    """
+
+    def test_die_auswahl_ist_kleiner_als_der_bestand(self) -> None:
+        from QAppFramework.derive import all_themes
+
+        assert 0 < len(available_themes()) < len(all_themes())
+
+    def test_jeder_kuratierte_name_existiert(self) -> None:
+        """Ein Tippfehler in der Liste faellt sonst nur als fehlender Eintrag auf."""
+        from QAppFramework.derive import KURATIERT, all_themes
+
+        unbekannt = [name for name in KURATIERT if name not in all_themes()]
+        assert not unbekannt, unbekannt
+
+    def test_beide_erscheinungsbilder_sind_vertreten(self) -> None:
+        """Sonst haette ein halber Tag Auswahl gar keine."""
+        arten = {palette_for_theme(name).dark for name in available_themes()}  # type: ignore[union-attr]
+        assert arten == {True, False}
+
+    def test_die_ausgeschlossenen_bleiben_im_paket(self) -> None:
+        """Sie sind nur nicht waehlbar - eine gespeicherte Wahl gilt weiter."""
+        assert palette_for_theme("hulkula") is not None
+        assert "hulkula" not in available_themes()
+
+    def test_ein_aktives_theme_bleibt_waehlbar(self) -> None:
+        """Sonst zeigt die Oberflaeche etwas, das im Auswahlfeld fehlt.
+
+        Beim ersten Blaettern waere es dann unwiederbringlich weg.
+        """
+        from QAppFramework.derive import selectable_themes
+
+        assert "hulkula" in selectable_themes("hulkula")
+        assert "hulkula" not in selectable_themes("")
+
+    def test_ein_unbekanntes_aktives_theme_sprengt_die_liste_nicht(self) -> None:
+        from QAppFramework.derive import selectable_themes
+
+        assert selectable_themes("gibt-es-nicht") == available_themes()

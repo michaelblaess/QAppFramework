@@ -362,13 +362,13 @@ class TestFelderWechseln:
 
     def test_ein_gemerktes_theme_wird_nicht_ueberschrieben(self, app: QApplication) -> None:
         """Wer wieder einschaltet, macht dort weiter, wo er war."""
-        d = ProbeDialog(Appearance(themes_enabled=False, theme="marley"))
+        d = ProbeDialog(Appearance(themes_enabled=False, theme="beastie"))
         d.show()
         app.processEvents()
         try:
             d._feld_themes_an.setChecked(True)
             app.processEvents()
-            assert d._feld_theme.currentData() == "marley"
+            assert d._feld_theme.currentData() == "beastie"
         finally:
             d.close()
 

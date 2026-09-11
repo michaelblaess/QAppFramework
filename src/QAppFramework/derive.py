@@ -234,12 +234,79 @@ def colors_from_palette(palette: Palette) -> dict[str, str]:
     }
 
 
+# Die Themes, die Michael am 11.09.2026 am laufenden Programm angesehen und
+# fuer gut befunden hat. Nur sie stehen zur Auswahl.
+#
+# Bewusst eine Liste und keine Formel. Zwei Versuche, das Urteil zu
+# berechnen, sind an seiner Auswahl gescheitert: die Saettigung des Grundes
+# haette Bunty ausgeschlossen (100 Prozent, gefaellt ihm), ein Mindestabstand
+# der Statusfarben zum Akzent haette Gemstone, Clipper, Ascot und Corleone
+# erwischt. Und Hulkula, das er als "erschlaegt einen mit seinem Gruen"
+# aussortiert hat, faellt bei keinem der Masse durch.
+#
+# Was ein Theme ueber einen Arbeitstag traegt, entscheidet der Augenschein.
+# Die Messung schuetzt davor, dass etwas unlesbar wird - mehr kann sie nicht.
+#
+# Die Liste waechst, wenn Michael weitere durchsieht. Die uebrigen 30 bleiben
+# im Paket und lassen sich hier eintragen, ohne dass sonst etwas zu tun waere.
+KURATIERT: tuple[str, ...] = (
+    "ascot",
+    "beastie",
+    "bebox",
+    "brick",
+    "bunty",
+    "classic-navy",
+    "clipper",
+    "corleone",
+    "cupertino",
+    "gemstone",
+    "marley",
+    "motif",
+)
+
+
 def available_themes() -> dict[str, str]:
-    """Alle waehlbaren Themes.
+    """Die waehlbaren Themes.
 
     Returns:
         Je Theme-Name der Anzeigename, alphabetisch nach Anzeigename. Der
         Schluessel steht in der Einstellungsdatei und aendert sich nicht.
+        Geliefert werden nur die kuratierten - ein Name aus `KURATIERT`,
+        den es nicht gibt, faellt still weg statt die Auswahl zu sprengen.
+    """
+    auswahl = {name: DISPLAY_NAMES[name] for name in KURATIERT if name in DISPLAY_NAMES}
+    return dict(sorted(auswahl.items(), key=lambda paar: paar[1].lower()))
+
+
+def selectable_themes(aktiv: str = "") -> dict[str, str]:
+    """Die kuratierten Themes, plus das gerade aktive.
+
+    Ein Theme, das jemand gewaehlt hat, bevor die Auswahl kuratiert wurde,
+    gilt weiter - es darf dann aber nicht aus der Liste verschwinden. Sonst
+    zeigt die Oberflaeche etwas an, das im Auswahlfeld nicht vorkommt, und
+    beim ersten Blaettern ist es unwiederbringlich weg.
+
+    Args:
+        aktiv:
+            Der Name des aktiven Themes, oder "" fuer keines.
+
+    Returns:
+        Je Theme-Name der Anzeigename, alphabetisch nach Anzeigename.
+    """
+    auswahl = dict(available_themes())
+    if aktiv and aktiv not in auswahl and aktiv in DISPLAY_NAMES:
+        auswahl[aktiv] = DISPLAY_NAMES[aktiv]
+    return dict(sorted(auswahl.items(), key=lambda paar: paar[1].lower()))
+
+
+def all_themes() -> dict[str, str]:
+    """Alle 40, auch die nicht kuratierten.
+
+    Fuer den Fall, dass jemand die Auswahl erweitern will und wissen muss,
+    was es sonst noch gibt.
+
+    Returns:
+        Je Theme-Name der Anzeigename, alphabetisch nach Anzeigename.
     """
     return dict(sorted(DISPLAY_NAMES.items(), key=lambda paar: paar[1].lower()))
 
@@ -315,8 +382,11 @@ __all__ = [
     "RETRO_PALETTES",
     "default_theme",
     "Palette",
+    "KURATIERT",
+    "all_themes",
     "available_themes",
     "colors_from_palette",
     "palette_for_theme",
+    "selectable_themes",
     "short_theme_names",
 ]

@@ -61,7 +61,7 @@ from PySide6.QtWidgets import (
 )
 
 from .color import is_light, normalize
-from .derive import available_themes, default_theme
+from .derive import default_theme, selectable_themes
 from .texts import pruefe_sprache, text
 from .theme import (
     DEFAULT_ACCENT,
@@ -391,7 +391,7 @@ class SettingsDialogBase(QDialog):
         # eigenen Akzent mit. Der Hinweis darunter sagt das.
         self._feld_theme = self.auswahl()
         self._feld_theme.addItem(text("einstellungen.theme_standard", self._sprache), "")
-        for schluessel, anzeige in available_themes().items():
+        for schluessel, anzeige in selectable_themes(self._darstellung.theme).items():
             self._feld_theme.addItem(anzeige, schluessel)
         self._feld_theme.setCurrentIndex(max(0, self._feld_theme.findData(self._darstellung.theme)))
         formular.addRow(self.beschriftung(text("einstellungen.theme", self._sprache)), self._feld_theme)
