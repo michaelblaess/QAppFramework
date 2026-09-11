@@ -162,3 +162,39 @@ class TestUnabhaengigkeit:
         )
         assert ergebnis.returncode == 0, ergebnis.stderr
         assert ergebnis.stdout.strip() == "ok"
+
+
+class TestKurznamen:
+    """Fuer Stellen mit wenig Platz - die Werkzeugleiste etwa.
+
+    "Fifty-Eight - Black Dial, Aged Gold Lume & Bezel Red" sprengt dort
+    jede vernuenftige Breite, der Name allein nicht.
+    """
+
+    def test_jedes_theme_hat_einen_kurznamen(self) -> None:
+        from QAppFramework.derive import short_theme_names
+
+        kurz = short_theme_names()
+        assert set(kurz) == set(available_themes())
+        assert all(kurz.values())
+
+    def test_der_kurzname_ist_der_anfang_des_langen(self) -> None:
+        from QAppFramework.derive import short_theme_names
+
+        lang = available_themes()
+        for schluessel, kurzname in short_theme_names().items():
+            assert lang[schluessel].startswith(kurzname), schluessel
+
+    def test_die_meisten_werden_wirklich_kuerzer(self) -> None:
+        """Gegenprobe: gaebe die Funktion den langen Namen zurueck, waeren
+        die beiden Tests oben trotzdem gruen."""
+        from QAppFramework.derive import short_theme_names
+
+        lang = available_themes()
+        gekuerzt = sum(1 for s, k in short_theme_names().items() if k != lang[s])
+        assert gekuerzt >= 30, f"nur {gekuerzt} von {len(lang)} gekuerzt"
+
+    def test_ein_name_ohne_trenner_bleibt_ganz(self) -> None:
+        from QAppFramework.derive import short_theme_names
+
+        assert short_theme_names()["classic-navy"] == "Classic Navy"

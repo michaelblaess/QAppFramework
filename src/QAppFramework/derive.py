@@ -266,6 +266,36 @@ def default_theme(dunkel: bool) -> str:
     return vorschlag if vorschlag in PALETTES_BY_NAME else next(iter(available_themes()))
 
 
+# Die Anzeigenamen haben die Form "Marley - Reggae Black, Green, Gold & Red".
+# Getrennt wird mit einem Geviertstrich, hier als Escape statt als Zeichen:
+# die Quelldateien sollen ohne cp1252-kritische Zeichen auskommen.
+_NAMENSTRENNER = ("—", "–", " - ")
+
+
+def short_theme_names() -> dict[str, str]:
+    """Wie `available_themes()`, aber nur der Name ohne die Beschreibung.
+
+    Fuer Stellen mit wenig Platz - eine Auswahlliste in der Werkzeugleiste
+    etwa. "Fifty-Eight - Black Dial, Aged Gold Lume & Bezel Red" sprengt
+    dort jede vernuenftige Breite, "Fifty-Eight" nicht. Die vollstaendige
+    Fassung gehoert daneben als Hinweisfenster.
+
+    Returns:
+        Je Theme-Name der Kurzname, in derselben Reihenfolge wie
+        `available_themes()`. Traegt ein Anzeigename keinen Trenner, kommt
+        er unveraendert zurueck.
+    """
+    gekuerzt: dict[str, str] = {}
+    for schluessel, anzeige in available_themes().items():
+        kurz = anzeige
+        for trenner in _NAMENSTRENNER:
+            if trenner in anzeige:
+                kurz = anzeige.split(trenner, 1)[0]
+                break
+        gekuerzt[schluessel] = kurz.strip()
+    return gekuerzt
+
+
 def palette_for_theme(name: str) -> Palette | None:
     """Sucht ein Theme ueber seinen Namen.
 
@@ -288,4 +318,5 @@ __all__ = [
     "available_themes",
     "colors_from_palette",
     "palette_for_theme",
+    "short_theme_names",
 ]
