@@ -118,3 +118,28 @@ class TestFensterwache:
         erste = titlebar._wache
         watch_new_windows()
         assert titlebar._wache is erste
+
+
+class TestRahmenton:
+    """Der Fensterrahmen bleibt ruhig, auch bei kraeftigem Akzent.
+
+    Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen ist heftig".
+    Er umschliesst die ganze Anwendung - was um einen kleinen Dialog noch
+    als Kante liest, wird um ein Vollfenster zu einem Leuchtband.
+    """
+
+    def test_der_rahmen_nimmt_nicht_den_akzent(self) -> None:
+        """Gelesen am Quelltext, weil das Ergebnis nicht messbar ist.
+
+        Die Titelleiste steckt nicht im Fensterabbild - was Windows daraus
+        macht, sieht man nur mit dem Auge. Was sich pruefen laesst, ist die
+        Farbe, die hineingereicht wird.
+        """
+        from pathlib import Path
+
+        import QAppFramework.titlebar as modul
+
+        quelltext = Path(modul.__file__).read_text(encoding="utf-8")
+        zeile = next(z for z in quelltext.splitlines() if "DWMWA_BORDER_COLOR" in z and "setze(" in z)
+        assert "p.border" in zeile
+        assert "p.accent" not in zeile

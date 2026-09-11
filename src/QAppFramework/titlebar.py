@@ -105,7 +105,13 @@ def style_window(widget: QWidget, farben: Colors | None = None) -> bool:
         # den Fenstergrund - so geht das Band optisch in die Leiste ueber.
         setze(DWMWA_CAPTION_COLOR, _colorref(p.bg_secondary))
         setze(DWMWA_TEXT_COLOR, _colorref(p.text_primary))
-        setze(DWMWA_BORDER_COLOR, _colorref(p.accent if p.expressive else p.border))
+
+        # Der Fensterrahmen bleibt ruhig, auch bei einem Theme mit kraeftigem
+        # Akzent. Er umschliesst die ganze Anwendung: was um einen kleinen
+        # Dialog noch als Kante liest, wird um ein Vollfenster zu einem
+        # Leuchtband. Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen
+        # ist heftig". Der Akzent bleibt den Bloecken INNEN vorbehalten.
+        setze(DWMWA_BORDER_COLOR, _colorref(p.border))
     except Exception:  # pragma: no cover - haengt an der Windows-Fassung
         logger.debug("Titelleiste konnte nicht eingefaerbt werden", exc_info=True)
         return False
