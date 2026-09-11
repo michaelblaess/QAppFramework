@@ -85,8 +85,44 @@ zeigen.
 
 ---
 
-## Reihenfolge
+## Stand: alle vier Schritte erledigt (10.09.2026)
 
-1, 2, 3, 4 - jeder Schritt für sich lauffähig und committet. Nach Schritt 2 ist
-die Ableitung geprüft, aber noch nirgends sichtbar; das ist Absicht, damit ein
-Fehler in der Ableitung nicht als Bedienproblem erscheint.
+| Schritt | Commit | Ergebnis |
+| --- | --- | --- |
+| 1 textual-themes aufteilen | `a86ff9cb` | 520 Feldwerte verglichen, 0 Abweichungen |
+| 2 Ableitung | `88b682ea` | 40 von 40 Themes erreichen alle sechs Ziele |
+| 3 Auswahl und Umschalten | `9d12ee51`, `41cbb460` | Feld in beiden Anwendungen, Strg+T in SiteHammer |
+| 4 Selbstgezeichnetes | - | war bereits gelöst |
+
+**Schritt 4 war keiner.** `_erscheinungsbild_anwenden()` in SiteHammer färbt
+die selbstgezeichneten Reiter und die Sinnbilder ohnehin schon neu - am
+laufenden Fenster nachgesehen, sechs Wechsel hintereinander, alles zieht mit.
+Der Plan hatte das als offenen Punkt geführt, weil der Prototyp für jedes
+Theme neu gestartet war und es nicht zeigen konnte.
+
+**Was beim Bauen dazukam und im Plan fehlte:**
+
+- Ein Repo, das `textual-themes` **selbst** pinnt, muss beide Pins ziehen -
+  sonst gewinnt der ältere gegen den der Bibliothek, und der Start scheitert an
+  `textual_themes.palettes`. Betrifft SiteHammer, weil es eine TUI hat.
+- Die Abfrage hieß zuerst `theme()` und verdeckte das gleichnamige Modul.
+  Sie heißt `current_theme()`.
+- In jira-timesheet-qt ist `theme` seit jeher das Erscheinungsbild. Das
+  Farbschema steht dort unter `color_scheme`.
+- Zwei neue Glyphen brauchten einen Test: `load_icon` gibt bei einem
+  unbekannten Namen absichtlich ein leeres QIcon zurück, ein Tippfehler fällt
+  also nur als Lücke in der Werkzeugleiste auf.
+
+**Der offene Punkt aus Schritt 3 ist entschieden:** das Theme bringt seinen
+Akzent mit. Michaels fünf Akzentfarben gelten weiter für die Standardpalette.
+
+## Was bewusst offen bleibt
+
+- **Durchschalten in jira-timesheet-qt.** Dort gibt es nur das Auswahlfeld.
+  Die Werkzeugleiste ist voller als in SiteHammer, und ob Strg+T dort frei
+  ist, wurde nicht geprüft.
+- **Tabellen mit echten Daten.** Geprüft wurde am Leerzustand und am
+  Einstellungsdialog. Zeilenwechselfarben und Markierungen in gefüllten
+  Tabellen hat noch niemand gegen ein Retro-Schema gesehen.
+- **Der Kalender in jira-timesheet-qt** zeichnet selbst und hat ein eigenes
+  `apply_mode(mode)` - er kennt hell und dunkel, nicht das Farbschema.
