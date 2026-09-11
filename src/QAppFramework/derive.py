@@ -82,6 +82,8 @@ ZIELE: dict[str, float] = {
     "accent": 3.0,
     "border": 1.4,
     "border_hover": 1.4,
+    # Die Statusfarben sind Text in Tabellenzellen, kein Schmuck.
+    "status": 4.5,
 }
 
 # Der Hover-Ton soll ueber der ruhenden Linie liegen, nicht daneben.
@@ -152,13 +154,18 @@ def colors_from_palette(palette: Palette) -> dict[str, str]:
         "accent": accent,
         "accent_hover": accent_hover,
         "accent_subtle": _rgba(accent, 0.20 if palette.dark else 0.14),
-        # Die Statusfarben kommen unveraendert aus dem Theme. Sie stehen in
-        # Tabellenzellen auf wechselndem Grund, und ein Theme, das Rot und
-        # Gruen bewusst gedaempft haelt, soll das behalten duerfen.
-        "green": palette.success,
-        "orange": palette.warning,
-        "red": palette.error,
-        "purple": palette.secondary,
+        # Die Statusfarben stehen als TEXT in Tabellenzellen - "erreichbar",
+        # "nicht gefunden" - und brauchen deshalb dasselbe Ziel wie jede
+        # andere Schrift. Bis zum 11.09.2026 kamen sie unveraendert aus dem
+        # Theme, mit der Begruendung, ein Theme duerfe seine Toene behalten.
+        # Gemessen verfehlten damit ALLE 40 Schemata das Ziel, und die beiden
+        # Grundpaletten gleich mit: Rot fiel bei 32 von 40 durch, Violett bei
+        # 24, Gruen bei 15. Michael ist es am Vergleich mit der TUI
+        # aufgefallen, wo dieselbe Farbe deutlich kraeftiger wirkt.
+        "green": gehoben("status", palette.success, ZIELE["status"]),
+        "orange": gehoben("status", palette.warning, ZIELE["status"]),
+        "red": gehoben("status", palette.error, ZIELE["status"]),
+        "purple": gehoben("status", palette.secondary, ZIELE["status"]),
     }
 
 

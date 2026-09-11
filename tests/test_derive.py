@@ -36,6 +36,13 @@ ZIELE = {
     "border": 1.4,
     "border_hover": 1.4,
     "accent": 3.0,
+    # Die Statusfarben stehen als Text in Tabellenzellen - "erreichbar",
+    # "nicht gefunden". Bis zum 11.09.2026 kamen sie ungeprueft aus dem
+    # Theme und verfehlten das Ziel in ALLEN 40 Schemata.
+    "green": 4.5,
+    "orange": 4.5,
+    "red": 4.5,
+    "purple": 4.5,
 }
 
 

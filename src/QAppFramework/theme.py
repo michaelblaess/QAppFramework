@@ -21,6 +21,7 @@ from enum import StrEnum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QGuiApplication, QPalette
 
+from .color import readable_on
 from .derive import colors_from_palette, palette_for_theme
 from .texts import text as _text
 
@@ -335,7 +336,9 @@ def build_palette(p: Colors) -> QPalette:
     qp.setColor(QPalette.ColorRole.Button, QColor(p.bg_elevated))
     qp.setColor(QPalette.ColorRole.ButtonText, QColor(p.text_primary))
     qp.setColor(QPalette.ColorRole.Highlight, QColor(p.accent))
-    qp.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+    # Nicht fest weiss: auf einem gelben oder hellgruenen Akzent ist der
+    # ausgewaehlte Eintrag damit nicht mehr zu lesen.
+    qp.setColor(QPalette.ColorRole.HighlightedText, QColor(readable_on(p.accent)))
     qp.setColor(QPalette.ColorRole.PlaceholderText, QColor(p.text_tertiary))
     qp.setColor(QPalette.ColorRole.Link, QColor(p.accent))
 
@@ -486,7 +489,7 @@ def build_stylesheet(p: Colors) -> str:
     #RegistrationStatus[zustand="gut"] {{ color: {p.green}; }}
     #RegistrationStatus[zustand="schlecht"] {{ color: {p.red}; }}
     #RegistrationKey {{ font-size: 12px; }}
-    #AboutBadge {{ background-color: {p.accent}; color: #ffffff;
+    #AboutBadge {{ background-color: {p.accent}; color: {readable_on(p.accent)};
                    font-family: Consolas, Menlo, "DejaVu Sans Mono";
                    font-size: 12px; font-weight: 700;
                    padding: 3px 12px; border-radius: 9px; }}
@@ -497,7 +500,7 @@ def build_stylesheet(p: Colors) -> str:
     #AboutLink a {{ color: {p.accent_hover}; text-decoration: none; }}
     #Divider {{ background-color: {p.border}; max-height: 1px; min-height: 1px; border: none; }}
     #DialogButtons {{ background-color: {p.bg_secondary}; border-top: 1px solid {p.border}; }}
-    #StepNumber {{ color: #ffffff; background-color: {p.accent};
+    #StepNumber {{ color: {readable_on(p.accent)}; background-color: {p.accent};
                       border-radius: 11px; font-weight: bold; }}
     """)
 

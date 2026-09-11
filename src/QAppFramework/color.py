@@ -57,6 +57,28 @@ def is_light(hexwert: str) -> bool:
     return (0.299 * rot + 0.587 * gruen + 0.114 * blau) > 150
 
 
+def readable_on(hintergrund: str) -> str:
+    """Schwarz oder Weiss - was auf dieser Flaeche besser lesbar ist.
+
+    Fuer Schrift, die auf einer farbigen Flaeche steht: Auswahlbalken,
+    Abzeichen, nummerierte Punkte. Ein fest eingetragenes Weiss traegt nur
+    so lange, wie die Flaeche dunkel genug bleibt - bei einem gelben oder
+    hellgruenen Akzent verschwindet es.
+
+    Nicht ueber `is_light()`, sondern ueber den tatsaechlichen Kontrast:
+    die YIQ-Naeherung dort hat eine feste Schwelle, hier entscheidet, was
+    messbar besser traegt.
+
+    Args:
+        hintergrund:
+            Die Flaeche, auf der die Schrift steht.
+
+    Returns:
+        '#000000' oder '#FFFFFF'.
+    """
+    return "#000000" if contrast_ratio("#000000", hintergrund) >= contrast_ratio("#FFFFFF", hintergrund) else "#FFFFFF"
+
+
 def blend(grund: str, zumischung: str, anteil: float) -> str:
     """Mischt zwei Farben.
 

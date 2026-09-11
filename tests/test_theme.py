@@ -220,3 +220,45 @@ class TestWerkzeugleiste:
         fenster = QMainWindow()
         assert fenster.addToolBar("probe").iconSize().width() == TOOLBAR_ICON_SIZE
         fenster.close()
+
+
+class TestSchriftAufFarbflaeche:
+    """Schrift auf einer Akzentflaeche muss zur Akzentfarbe passen.
+
+    Bis zum 11.09.2026 stand an drei Stellen ein festes Weiss: der
+    Auswahlbalken in Tabellen, das Abzeichen im Info-Dialog und die
+    nummerierten Punkte im Leerzustand. Das traegt nur, solange der Akzent
+    dunkel genug bleibt - Michael hat es an einem Schema mit gelbem Akzent
+    gesehen, wo der ausgewaehlte Eintrag unlesbar wurde.
+
+    Auch die Grundpalette war betroffen: weisse Schrift auf dem orangen
+    Auswahlbalken kam auf 2,2, schwarze kommt auf 9,4.
+    """
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_die_auswahl_ist_lesbar(self, palette: Colors) -> None:
+        from QAppFramework.color import readable_on
+
+        assert contrast_ratio(readable_on(palette.accent), palette.accent) >= 4.5
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_abzeichen_und_schrittzahlen_ebenso(self, palette: Colors) -> None:
+        from QAppFramework.color import readable_on
+
+        qss = build_stylesheet(palette)
+        erwartet = readable_on(palette.accent)
+        for objekt in ("#AboutBadge", "#StepNumber"):
+            block = qss[qss.index(objekt) :][:200]
+            assert f"color: {erwartet}" in block, f"{objekt}: {block[:120]}"
+
+    def test_ein_gelber_akzent_bekommt_schwarze_schrift(self) -> None:
+        """Der Fall, an dem es aufgefallen ist."""
+        from QAppFramework.color import readable_on
+
+        assert readable_on("#FCDD09") == "#000000"
+
+    def test_ein_dunkler_akzent_bekommt_weisse(self) -> None:
+        """Gegenprobe - sonst gaebe die Funktion immer dasselbe zurueck."""
+        from QAppFramework.color import readable_on
+
+        assert readable_on("#1a1a1a") == "#FFFFFF"
