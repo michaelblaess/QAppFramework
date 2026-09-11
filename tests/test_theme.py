@@ -148,6 +148,45 @@ class TestReiter:
         assert "#ViewTabs {" in build_stylesheet(LIGHT)
 
 
+class TestEingerastet:
+    """Ein eingerasteter Werkzeugknopf muss als Zustand erkennbar sein.
+
+    Bis zum 11.09.2026 trug ihn allein die durchscheinende Flaeche
+    `accent_subtle`. Ueber alle 40 Farbschemata und beide Grundpaletten
+    gemessen kam die auf 1,16 bis 1,68 gegen ihren Untergrund - weniger,
+    als eine blosse Trennlinie erreichen muss. Michael ist es an einem
+    dunkelblauen Schema aufgefallen, der Mangel war aber ueberall.
+    """
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_der_eingerastete_knopf_bekommt_einen_rahmen(self, palette: Colors) -> None:
+        qss = build_stylesheet(palette)
+        block = qss[qss.index("QToolButton:checked") :][:200]
+        assert f"border: 1px solid {palette.accent}" in block
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_der_ruhende_knopf_haelt_den_platz_dafuer_frei(self, palette: Colors) -> None:
+        """Sonst springt die Leiste, sobald ein Knopf einrastet."""
+        qss = build_stylesheet(palette)
+        block = qss[qss.index("QToolButton {") :][:200]
+        assert "border: 1px solid transparent" in block
+
+    @pytest.mark.parametrize("palette", [LIGHT, DARK], ids=["hell", "dunkel"])
+    def test_der_rahmen_hebt_sich_von_der_werkzeugleiste_ab(self, palette: Colors) -> None:
+        """Die Leiste steht auf bg_secondary, nicht auf dem Fenstergrund."""
+        assert contrast_ratio(palette.accent, palette.bg_secondary) >= 2.5
+
+    def test_gedrueckt_und_eingerastet_sind_zwei_dinge(self) -> None:
+        """Gedrueckt ist ein Augenblick, eingerastet ein Zustand.
+
+        Stuenden beide in derselben Regel, bekaeme auch der fluechtige
+        Druck einen Rahmen - und die Leiste flackerte bei jedem Klick.
+        """
+        qss = build_stylesheet(DARK)
+        gedrueckt = qss[qss.index("QToolButton:pressed") :][:120]
+        assert "border:" not in gedrueckt
+
+
 class TestWerkzeugleiste:
     def test_die_abstaende_stimmen_ueberein(self) -> None:
         qss = build_stylesheet(LIGHT)
@@ -156,10 +195,17 @@ class TestWerkzeugleiste:
         assert "spacing: 2px" in block
 
     def test_die_knoepfe_sind_flach_bis_zum_hover(self) -> None:
+        """Flach heisst: nichts zu sehen, nicht: kein Rahmen im Stylesheet.
+
+        Seit dem 11.09.2026 steht dort `1px solid transparent` statt `none` -
+        der Platz fuer den Rahmen des eingerasteten Zustands wird freigehalten,
+        damit die Leiste beim Einrasten nicht springt. Sichtbar ist davon
+        nichts, die Anforderung dieses Tests gilt also unveraendert.
+        """
         qss = build_stylesheet(LIGHT)
         block = qss[qss.index("QToolButton {") :][:200]
         assert "background: transparent" in block
-        assert "border: none" in block
+        assert "border: 1px solid transparent" in block
 
     def test_die_bibliothek_setzt_keine_sinnbildgroesse_vor(self) -> None:
         """Qt liefert 24 Pixel fuer Werkzeugleisten - Anwendungen sollen nichts setzen.

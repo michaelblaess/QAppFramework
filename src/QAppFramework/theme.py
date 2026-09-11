@@ -399,10 +399,19 @@ def build_stylesheet(p: Colors) -> str:
     QToolBar {{ background-color: {p.bg_secondary}; border-bottom: 1px solid {p.border};
                 padding: 3px 6px; spacing: 2px; }}
     QToolBar::separator {{ background-color: {p.border}; width: 1px; margin: 4px 6px; }}
-    QToolButton {{ background: transparent; border: none;
-                   border-radius: {RADIUS_SM}px; padding: 5px; }}
+    /* Der Rahmen ist im Ruhezustand durchsichtig und nicht weg - sonst
+       springt die Leiste, sobald ein Knopf eingerastet ist. */
+    QToolButton {{ background: transparent; border: 1px solid transparent;
+                   border-radius: {RADIUS_SM}px; padding: 4px; }}
     QToolButton:hover {{ background-color: {p.bg_tertiary}; }}
-    QToolButton:pressed, QToolButton:checked {{ background-color: {p.accent_subtle}; }}
+    QToolButton:pressed {{ background-color: {p.accent_subtle}; }}
+    /* Eingerastet ist ein ZUSTAND, gedrueckt nur ein Augenblick. Die
+       durchscheinende Flaeche allein traegt das nicht: ueber alle Themes
+       gemessen kam sie auf 1,16 bis 1,68 gegen ihren Untergrund, weniger
+       als eine blosse Trennlinie erreichen muss. Der Rahmen in Akzentfarbe
+       ist davon unabhaengig sichtbar. */
+    QToolButton:checked {{ background-color: {p.accent_subtle};
+                           border: 1px solid {p.accent}; }}
 
     #ViewTabs {{ background-color: {p.bg_secondary}; border-bottom: 1px solid {p.border}; }}
     #ViewTabs::tab {{ background: transparent; color: {p.text_secondary};
