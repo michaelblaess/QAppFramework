@@ -171,17 +171,20 @@ class DisclaimerDialog(QDialog):
 
         knopfzeile = QHBoxLayout()
         knopfzeile.addStretch(1)
-        self._ablehnen = QPushButton("Beenden")
-        self._ablehnen.setObjectName("disclaimer-quit")
-        self._ablehnen.clicked.connect(self.reject)
-        knopfzeile.addWidget(self._ablehnen)
-
+        # Der ablehnende Knopf steht zuletzt, wie Abbrechen in jedem
+        # Windows-Dialog. In dieser Reihenfolge angelegt, damit die Tab-Folge
+        # der Anzeige entspricht.
         self._annehmen = QPushButton("Zustimmen und starten")
         self._annehmen.setObjectName("disclaimer-accept")
         self._annehmen.setDefault(True)
         self._annehmen.setEnabled(False)
         self._annehmen.clicked.connect(self.accept)
         knopfzeile.addWidget(self._annehmen)
+
+        self._ablehnen = QPushButton("Beenden")
+        self._ablehnen.setObjectName("disclaimer-quit")
+        self._ablehnen.clicked.connect(self.reject)
+        knopfzeile.addWidget(self._ablehnen)
         aussen.addLayout(knopfzeile)
 
     def _scrollbereich(self) -> QScrollArea:

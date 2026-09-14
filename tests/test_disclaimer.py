@@ -52,6 +52,18 @@ class TestDialog:
         dialog._haken.setChecked(True)
         assert dialog._annehmen.isEnabled()
 
+    def test_beenden_steht_zuletzt(self, anwendung: QApplication) -> None:
+        """Der ablehnende Knopf gehoert nach rechts, wie Abbrechen in jedem Dialog."""
+        dialog = DisclaimerDialog("my-tool 1.0")
+        dialog.show()
+        anwendung.processEvents()
+        try:
+            links = dialog._annehmen.mapTo(dialog, dialog._annehmen.rect().topLeft()).x()
+            rechts = dialog._ablehnen.mapTo(dialog, dialog._ablehnen.rect().topLeft()).x()
+            assert links < rechts, f"Zustimmen bei x={links}, Beenden bei x={rechts}"
+        finally:
+            dialog.close()
+
     def test_die_fensterzeile_heisst_disclaimer(self, anwendung: QApplication) -> None:
         assert DisclaimerDialog("my-tool 1.0").windowTitle() == "Disclaimer"
 

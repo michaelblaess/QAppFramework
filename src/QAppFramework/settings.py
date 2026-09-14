@@ -452,17 +452,20 @@ class SettingsDialogBase(QDialog):
         auslage.setSpacing(10)
         auslage.addStretch(1)
 
-        abbrechen = QPushButton(text("einstellungen.abbrechen", self._sprache))
-        abbrechen.setObjectName("SettingsCancel")
-        abbrechen.clicked.connect(self.reject)
-        auslage.addWidget(abbrechen)
-
+        # Abbrechen steht zuletzt, wie in jedem Windows-Dialog und wie es
+        # QDialogButtonBox dort ohnehin anordnet. In dieser Reihenfolge
+        # angelegt, damit die Tab-Folge der Anzeige entspricht.
         speichern = QPushButton(text("einstellungen.speichern", self._sprache))
         speichern.setObjectName("SettingsSave")
         speichern.setProperty("variant", "primary")
         speichern.setDefault(True)
         speichern.clicked.connect(self._speichern)
         auslage.addWidget(speichern)
+
+        abbrechen = QPushButton(text("einstellungen.abbrechen", self._sprache))
+        abbrechen.setObjectName("SettingsCancel")
+        abbrechen.clicked.connect(self.reject)
+        auslage.addWidget(abbrechen)
         return zeile
 
     def _speichern(self) -> None:

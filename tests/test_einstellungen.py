@@ -108,6 +108,16 @@ class TestGeruest:
     def test_der_dialog_hat_einen_groessengriff(self, dialog: ProbeDialog) -> None:
         assert dialog.isSizeGripEnabled()
 
+    def test_abbrechen_steht_zuletzt(self, dialog: ProbeDialog) -> None:
+        """Wie in jedem Windows-Dialog. Bis zum 14.09.2026 stand es links von Speichern."""
+        speichern = dialog.findChild(QPushButton, "SettingsSave")
+        abbrechen = dialog.findChild(QPushButton, "SettingsCancel")
+        assert speichern is not None
+        assert abbrechen is not None
+        links = speichern.mapTo(dialog, speichern.rect().topLeft()).x()
+        rechts = abbrechen.mapTo(dialog, abbrechen.rect().topLeft()).x()
+        assert links < rechts, f"Speichern bei x={links}, Abbrechen bei x={rechts}"
+
 
 class TestDarstellung:
     def test_die_uebergebenen_werte_stehen_in_den_feldern(self, dialog: ProbeDialog) -> None:
