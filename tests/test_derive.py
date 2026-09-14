@@ -248,6 +248,12 @@ class TestAusschluss:
         assert palette_for_theme("hulkula") is not None
         assert "hulkula" not in available_themes()
 
+    @pytest.mark.parametrize("name", ["razzy", "joker"])
+    def test_zu_aehnliche_themes_sind_nicht_waehlbar(self, name: str) -> None:
+        """Michael am 14.09.2026: Razzy gleicht Racing und Beastie, Joker gleicht Goldrunner."""
+        assert palette_for_theme(name) is not None, "bleibt im Paket - eine gespeicherte Wahl gilt weiter"
+        assert name not in available_themes()
+
     def test_ein_aktives_theme_bleibt_waehlbar(self) -> None:
         """Sonst zeigt die Oberflaeche etwas, das im Auswahlfeld fehlt.
 

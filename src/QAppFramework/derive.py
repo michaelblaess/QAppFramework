@@ -257,6 +257,12 @@ AUSGESCHLOSSEN: frozenset[str] = frozenset(
         "boing",
         "brotkasten",
         "hulkula",
+        # Zu nah an einem anderen, das bleibt (14.09.2026). Gemessen als
+        # mittlerer Abstand in Lab ueber sieben Farbrollen, der Median des
+        # naechsten Nachbarn liegt bei 17,5: Razzy liegt 10,1 von Racing und
+        # 12,8 von Beastie, Joker 17,8 von Goldrunner mit fast gleichem Grund.
+        "razzy",
+        "joker",
         # Ohne naehere Begruendung verworfen.
         "commandr",
         "geeko",
