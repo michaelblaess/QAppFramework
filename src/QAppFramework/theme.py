@@ -21,7 +21,7 @@ from enum import StrEnum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QGuiApplication, QPalette
 
-from .color import readable_on
+from .color import blend, contrast_ratio, readable_on, relative_luminance
 from .derive import colors_from_palette, palette_for_theme
 from .icons import indicator_image
 from .texts import text as _text
@@ -113,12 +113,19 @@ LIGHT = Colors(
 RADIUS_SM = 4
 RADIUS_MD = 6
 
-# Breite des Dialograhmens im expressiven Modus. Steht hier und nicht nur
-# im Stylesheet, weil die Dialoge denselben Wert als Layoutrand brauchen:
-# ein Kind mit randlosem Layout zeichnet sonst ueber den Rahmen, und der
-# bleibt nur dort stehen, wo zufaellig Platz ist. Genau so sah der
-# Info-Dialog am 11.09.2026 aus - unten gerahmt, oben nicht.
-DIALOG_RAHMEN = 2
+# Wechselnde Tabellenzeilen: mindestens so viel Kontrast zur normalen Zeile.
+# Bis zum 14.09.2026 stand dort fest bg_secondary - gemessen 1,03 bis 1,06:1
+# bei 39 von 40 Themes, praktisch unsichtbar. Aufgefallen bei Bunty, Minty,
+# BeBox, Ascot und Metropolis. 1,2 entspricht Brick (1,23), dem einzigen
+# Theme, bei dem niemand etwas vermisst hat.
+ALTERNATE_ROW_CONTRAST = 1.2
+
+# Der Fliesstext auf der wechselnden Zeile bleibt mindestens so lesbar.
+ROW_TEXT_CONTRAST = 4.5
+
+# Wie fein die wechselnde Zeile gesucht wird. Mit den 24 Schritten von
+# ensure_contrast schoss sie weit ueber das Ziel hinaus.
+_ROW_STEPS = 96
 
 # Qt liefert fuer Werkzeugleisten von sich aus 24 Pixel. jira-timesheet-qt setzt
 # nichts anderes, also wird hier ebenfalls nichts gesetzt. Der Wert steht nur
@@ -368,6 +375,30 @@ def colors(dunkel: bool | None = None) -> Colors:
     )
 
 
+def alternate_row_color(p: Colors) -> str:
+    """Die Farbe jeder zweiten Tabellenzeile.
+
+    Ausgangspunkt ist bg_secondary. Die Farbe wird vom Tabellengrund weg
+    verschoben - auf dunklem Grund heller, auf hellem dunkler -, bis sie
+    ALTERNATE_ROW_CONTRAST erreicht. Sie geht dabei nie so weit, dass der
+    Fliesstext darauf unter ROW_TEXT_CONTRAST faellt: dann bleibt es beim
+    letzten Schritt, der noch lesbar war.
+
+    Returns:
+        Die Farbe als '#RRGGBB'.
+    """
+    pol = "#FFFFFF" if relative_luminance(p.bg_tertiary) < 0.5 else "#000000"
+    beste = blend(p.bg_secondary, pol, 0.0)
+    for schritt in range(_ROW_STEPS + 1):
+        kandidat = blend(p.bg_secondary, pol, schritt / _ROW_STEPS)
+        if contrast_ratio(p.text_primary, kandidat) < ROW_TEXT_CONTRAST:
+            break
+        beste = kandidat
+        if contrast_ratio(kandidat, p.bg_tertiary) >= ALTERNATE_ROW_CONTRAST:
+            break
+    return beste
+
+
 def build_palette(p: Colors) -> QPalette:
     """Faerbt die nativen Bedienelemente.
 
@@ -378,7 +409,7 @@ def build_palette(p: Colors) -> QPalette:
     qp.setColor(QPalette.ColorRole.Window, QColor(p.bg_primary))
     qp.setColor(QPalette.ColorRole.WindowText, QColor(p.text_primary))
     qp.setColor(QPalette.ColorRole.Base, QColor(p.bg_tertiary))
-    qp.setColor(QPalette.ColorRole.AlternateBase, QColor(p.bg_secondary))
+    qp.setColor(QPalette.ColorRole.AlternateBase, QColor(alternate_row_color(p)))
     qp.setColor(QPalette.ColorRole.ToolTipBase, QColor(p.bg_elevated))
     qp.setColor(QPalette.ColorRole.ToolTipText, QColor(p.text_primary))
     qp.setColor(QPalette.ColorRole.Text, QColor(p.text_primary))
@@ -487,9 +518,9 @@ def _expressive_rules(p: Colors) -> str:
     /* Der aktive Reiter wird gefuellt statt nur unterstrichen. */
     #ViewTabs::tab:selected {{ background-color: {p.accent_subtle}; }}
 
-    /* Dialoge grenzen sich vom Fenster dahinter ab - im Terminal ist das
-       ein doppelter Rahmen, hier eine kraeftigere Linie. */
-    QDialog {{ border: {DIALOG_RAHMEN}px solid {p.accent}; }}
+    /* Dialoge grenzen sich ueber ihren Fensterrahmen ab, im Akzent und
+       rundum - siehe titlebar.border_color. Eine eigene Linie an dieser
+       Stelle lief nur um den Inhalt und endete unter der Titelleiste. */
 
     /* Ein gefuellter Titelbalken, wie ihn eine Terminaloberflaeche ueber
        jeden Kasten setzt. Die Anwendung muss ihn vergeben - sie weiss, was
