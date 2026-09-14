@@ -24,7 +24,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QEvent, QObject
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QDialog, QWidget
 
 from .color import is_light, normalize
 from .theme import Colors, colors
@@ -54,6 +54,30 @@ def _colorref(hexwert: str) -> int:
     roh = normalize(hexwert)
     rot, gruen, blau = (int(roh[i : i + 2], 16) for i in (0, 2, 4))
     return (blau << 16) | (gruen << 8) | rot
+
+
+def border_color(widget: QWidget, farben: Colors) -> str:
+    """Die Farbe des Fensterrahmens.
+
+    Das Hauptfenster bleibt ruhig, auch bei kraeftigem Akzent: der Rahmen
+    umschliesst die ganze Anwendung, und um ein Vollfenster wird er zum
+    Leuchtband. Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen ist
+    heftig".
+
+    Ein Dialog bei einem ausdrucksstarken Theme bekommt dagegen den Akzent -
+    rundum, auch um die Titelleiste. Bis zum 14.09.2026 zeichnete das
+    Stylesheet dort eine eigene Linie, die nur den Inhalt umlief und unter
+    der Titelleiste endete. Michael: "Der Rahmen ist nicht einheitlich".
+
+    Args:
+        widget:
+            Das Fenster.
+        farben:
+            Die geltende Palette.
+    """
+    if farben.expressive and isinstance(widget, QDialog):
+        return farben.accent
+    return farben.border
 
 
 def style_window(widget: QWidget, farben: Colors | None = None) -> bool:
@@ -106,12 +130,8 @@ def style_window(widget: QWidget, farben: Colors | None = None) -> bool:
         setze(DWMWA_CAPTION_COLOR, _colorref(p.bg_secondary))
         setze(DWMWA_TEXT_COLOR, _colorref(p.text_primary))
 
-        # Der Fensterrahmen bleibt ruhig, auch bei einem Theme mit kraeftigem
-        # Akzent. Er umschliesst die ganze Anwendung: was um einen kleinen
-        # Dialog noch als Kante liest, wird um ein Vollfenster zu einem
-        # Leuchtband. Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen
-        # ist heftig". Der Akzent bleibt den Bloecken INNEN vorbehalten.
-        setze(DWMWA_BORDER_COLOR, _colorref(p.border))
+        # Ruhig am Hauptfenster, im Akzent am Dialog - siehe border_color.
+        setze(DWMWA_BORDER_COLOR, _colorref(border_color(widget, p)))
     except Exception:  # pragma: no cover - haengt an der Windows-Fassung
         logger.debug("Titelleiste konnte nicht eingefaerbt werden", exc_info=True)
         return False

@@ -25,6 +25,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QLabel  # noqa: E402
 from QAppFramework.theme import DARK, LIGHT  # noqa: E402
 from QAppFramework.titlebar import (  # noqa: E402
     _colorref,
+    border_color,
     style_all_windows,
     style_window,
     watch_new_windows,
@@ -121,25 +122,45 @@ class TestFensterwache:
 
 
 class TestRahmenton:
-    """Der Fensterrahmen bleibt ruhig, auch bei kraeftigem Akzent.
+    """Der Fensterrahmen: ruhig am Hauptfenster, im Akzent am Dialog.
 
-    Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen ist heftig".
-    Er umschliesst die ganze Anwendung - was um einen kleinen Dialog noch
-    als Kante liest, wird um ein Vollfenster zu einem Leuchtband.
+    Michael am 11.09.2026 zu Jokers Giftgruen: "der Rahmen ist heftig" - um
+    ein Vollfenster wird ein Akzentrahmen zum Leuchtband. Am 14.09.2026 zum
+    Einstellungsdialog: "Der Rahmen ist nicht einheitlich". Das Stylesheet
+    zog dort eine eigene Linie, die nur den Inhalt umlief und unter der
+    Titelleiste endete - gemessen am echten Fenster.
     """
 
-    def test_der_rahmen_nimmt_nicht_den_akzent(self) -> None:
-        """Gelesen am Quelltext, weil das Ergebnis nicht messbar ist.
+    def test_das_hauptfenster_bleibt_ruhig(self, anwendung: QApplication) -> None:
+        from dataclasses import replace
 
-        Die Titelleiste steckt nicht im Fensterabbild - was Windows daraus
-        macht, sieht man nur mit dem Auge. Was sich pruefen laesst, ist die
-        Farbe, die hineingereicht wird.
-        """
+        from PySide6.QtWidgets import QMainWindow
+
+        laut = replace(DARK, expressive=True)
+        fenster = QMainWindow()
+        assert border_color(fenster, laut) == laut.border
+
+    def test_ein_dialog_nimmt_bei_ausdrucksstarken_themes_den_akzent(self, anwendung: QApplication) -> None:
+        from dataclasses import replace
+
+        laut = replace(DARK, expressive=True)
+        dialog = QDialog()
+        assert border_color(dialog, laut) == laut.accent
+        assert border_color(dialog, DARK) == DARK.border, "Die Grundpalette bleibt nuechtern"
+
+    def test_style_window_reicht_die_rahmenfarbe_durch(self) -> None:
+        """Gelesen am Quelltext: was Windows aus dem Rahmen macht, steckt in keinem Fensterabbild."""
         from pathlib import Path
 
         import QAppFramework.titlebar as modul
 
         quelltext = Path(modul.__file__).read_text(encoding="utf-8")
         zeile = next(z for z in quelltext.splitlines() if "DWMWA_BORDER_COLOR" in z and "setze(" in z)
-        assert "p.border" in zeile
-        assert "p.accent" not in zeile
+        assert "border_color(widget, p)" in zeile
+
+    def test_das_stylesheet_zieht_keine_eigene_dialoglinie(self) -> None:
+        from dataclasses import replace
+
+        from QAppFramework.theme import build_stylesheet
+
+        assert "QDialog {" not in build_stylesheet(replace(DARK, expressive=True))

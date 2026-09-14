@@ -42,7 +42,6 @@ from .registration import (
     verify,
 )
 from .texts import pruefe_sprache, text
-from .theme import DIALOG_RAHMEN, colors
 
 logger = logging.getLogger(__name__)
 
@@ -162,11 +161,8 @@ class AboutDialog(QDialog):
         self.setFixedWidth(BREITE)
 
         aussen = QVBoxLayout(self)
-        # Den Platz fuer den Dialograhmen freihalten. Ohne das zeichnet
-        # das erste Kind darueber, und der Rahmen steht nur dort, wo
-        # ein Layout zufaellig Rand hat.
-        rand = DIALOG_RAHMEN if colors().expressive else 0
-        aussen.setContentsMargins(rand, rand, rand, rand)
+        # Kein Rand: der Rahmen ist der Fensterrahmen (titlebar.border_color).
+        aussen.setContentsMargins(0, 0, 0, 0)
         aussen.setSpacing(0)
         aussen.addWidget(self._kopfzone(app_name, version, beschreibung))
 
