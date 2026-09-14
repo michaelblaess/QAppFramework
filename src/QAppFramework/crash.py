@@ -77,17 +77,19 @@ class ErrorDialog(QDialog):
         knoepfe.addWidget(kopieren)
         knoepfe.addStretch(1)
 
-        beenden = QPushButton(text("absturz.beenden", self._sprache))
-        beenden.setObjectName("absturz-beenden")
-        beenden.clicked.connect(self._beenden)
-        knoepfe.addWidget(beenden)
-
+        # Beenden steht zuletzt, wie Abbrechen in jedem Dialog. In dieser
+        # Reihenfolge angelegt, damit die Tab-Folge der Anzeige entspricht.
         weiter = QPushButton(text("absturz.weiter", self._sprache))
         weiter.setObjectName("absturz-weiter")
         weiter.setProperty("variant", "primary")
         weiter.setDefault(True)
         weiter.clicked.connect(self.accept)
         knoepfe.addWidget(weiter)
+
+        beenden = QPushButton(text("absturz.beenden", self._sprache))
+        beenden.setObjectName("absturz-beenden")
+        beenden.clicked.connect(self._beenden)
+        knoepfe.addWidget(beenden)
         auslage.addLayout(knoepfe)
 
     def _kopieren(self) -> None:

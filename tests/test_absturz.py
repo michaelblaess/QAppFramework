@@ -101,6 +101,18 @@ class TestDialog:
         assert namen == {"absturz-kopieren", "absturz-beenden", "absturz-weiter"}
         dialog.close()
 
+    def test_beenden_steht_zuletzt(self, app: QApplication) -> None:
+        """Wie Abbrechen in jedem Dialog. Bis zum 14.09.2026 stand es vor Weiter."""
+        dialog = ErrorDialog("x")
+        dialog.show()
+        app.processEvents()
+        try:
+            lage = {k.objectName(): k.mapTo(dialog, k.rect().topLeft()).x() for k in dialog.findChildren(QPushButton)}
+            assert lage["absturz-weiter"] < lage["absturz-beenden"], lage
+            assert lage["absturz-beenden"] == max(lage.values()), lage
+        finally:
+            dialog.close()
+
     def test_kopieren_legt_den_bericht_in_die_zwischenablage(self, app: QApplication) -> None:
         from PySide6.QtGui import QGuiApplication
 
