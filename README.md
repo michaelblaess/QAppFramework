@@ -7,6 +7,10 @@
 
 ---
 
+<p align="center">
+  <img src="docs/banner.jpg" alt="QAppFramework - desktop application assembled from modular building blocks" width="100%">
+</p>
+
 [![License](https://img.shields.io/badge/license-BUSL--1.1-3b82f6)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12+-3776ab)](https://www.python.org/)
 [![PySide6](https://img.shields.io/badge/PySide6-6.8+-41cd52)](https://doc.qt.io/qtforpython/)
