@@ -309,7 +309,7 @@ def selectable_themes(aktiv: str = "") -> dict[str, str]:
 
 
 def all_themes() -> dict[str, str]:
-    """Alle 40, auch die nicht kuratierten.
+    """Alle 41, auch die nicht kuratierten.
 
     Fuer den Fall, dass jemand die Auswahl erweitern will und wissen muss,
     was es sonst noch gibt.

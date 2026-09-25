@@ -1,4 +1,4 @@
-"""Jedes der 40 Themes muss eine benutzbare Oberflaeche ergeben.
+"""Jedes der 41 Themes muss eine benutzbare Oberflaeche ergeben.
 
 Ein Terminal-Theme ist fuer drei Flaechen und Vollflaechen-Bloecke gemacht.
 Eine Qt-Anwendung hat Zeilenwechselfarben, Menues, deaktivierte Zustaende,
@@ -51,8 +51,8 @@ def _werte(palette: Palette) -> dict[str, str]:
 
 
 class TestVollstaendigkeit:
-    def test_alle_vierzig_themes_kommen_an(self) -> None:
-        assert len(RETRO_PALETTES) == 40
+    def test_alle_einundvierzig_themes_kommen_an(self) -> None:
+        assert len(RETRO_PALETTES) == 41
 
     @pytest.mark.parametrize("palette", RETRO_PALETTES, ids=lambda p: p.name)
     def test_die_werte_passen_in_colors(self, palette: Palette) -> None:
@@ -123,7 +123,7 @@ class TestAuswahl:
     def test_jedes_theme_hat_einen_anzeigenamen(self) -> None:
         from QAppFramework.derive import all_themes
 
-        assert len(all_themes()) == 40
+        assert len(all_themes()) == 41
         assert all(all_themes().values())
 
     def test_die_liste_ist_nach_anzeigenamen_sortiert(self) -> None:
