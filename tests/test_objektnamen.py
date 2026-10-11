@@ -33,6 +33,11 @@ def _namen() -> list[str]:
     Aus dem Stylesheet gelesen statt von Hand gepflegt: so wird jeder neu
     hinzugefuegte Name automatisch mitgeprueft.
     """
+    # Laeuft schon beim Einsammeln der Tests, also vor jeder Fixture. Ohne
+    # QApplication bricht Qt ab, sobald das Stylesheet ein Zeichen neu zeichnen
+    # muss - das passiert nur, wenn der Zwischenspeicher im Temp-Ordner leer ist.
+    if not isinstance(QApplication.instance(), QApplication):
+        _namen.app = QApplication([])  # type: ignore[attr-defined]
     treffer = re.findall(r"#([A-Za-z][A-Za-z0-9_]*)\s*(?:\{|::|\[)", build_stylesheet(LIGHT))
     return sorted(set(treffer))
 
